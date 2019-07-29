@@ -1,26 +1,47 @@
+import re
+from django.db.models import Q
 import graphene
 from graphene_django import DjangoObjectType
 from .models import Item, Service
 
 
-class ItemType(DjangoObjectType):
+class ItemGraphQLType(DjangoObjectType):
     class Meta:
         model = Item
-        exclude_fields = ('row_id',)
 
 
-class ServiceType(DjangoObjectType):
+class ServiceGraphQLType(DjangoObjectType):
     class Meta:
         model = Service
-        exclude_fields = ('row_id',)
 
 
 class Query(graphene.ObjectType):
-    all_items = graphene.List(ItemType)
-    all_services = graphene.List(ServiceType)
+    medical_items = graphene.List(
+        ItemGraphQLType,
+        qry=graphene.String()
+    )
 
-    def resolve_all_items(self, info, **kwargs):
-        return Item.objects.all()
+    medical_services = graphene.List(
+        ServiceGraphQLType,
+        qry=graphene.String()
+    )
 
-    def resolve_all_services(self, info, **kwargs):
-        return Service.objects.all()
+    def resolve_medical_items(self, info, **kwargs):
+        qry = kwargs.get('qry')
+        if qry is not None:
+            return Item.objects.filter(
+                Q(code__icontains=qry) | Q(name__icontains=qry)
+            )
+        else:
+            # TODO: pagination
+            return Item.objects.all()
+
+    def resolve_medical_services(self, info, **kwargs):
+        qry = kwargs.get('qry')
+        if qry is not None:
+            return Service.objects.filter(
+                Q(code__icontains=qry) | Q(name__icontains=qry)
+            )
+        else:
+            # TODO: pagination
+            return Service.objects.all()
