@@ -1,6 +1,23 @@
 from django.db import models
 from core import fields
 
+class Diagnosis(models.Model):
+    id = models.AutoField(db_column='ICDID', primary_key=True)
+    legacy_id = models.IntegerField(
+        db_column='LegacyID', blank=True, null=True)
+    code = models.CharField(db_column='ICDCode', max_length=6)
+    name = models.CharField(db_column='ICDName', max_length=255)
+    validity_from = fields.DateTimeField(db_column='ValidityFrom')
+    validity_to = fields.DateTimeField(
+        db_column='ValidityTo', blank=True, null=True)
+
+    audit_user_id = models.IntegerField(db_column='AuditUserID')
+    # row_id = models.BinaryField(db_column='RowID', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tblICDCodes'
+
 
 class Item(models.Model):
     id = models.AutoField(db_column='ItemID', primary_key=True)
