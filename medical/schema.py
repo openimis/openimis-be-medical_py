@@ -1,4 +1,6 @@
 import re
+
+from core import ExtendedConnection
 from django.db.models import Q
 import graphene
 from graphene_django import DjangoObjectType
@@ -16,6 +18,8 @@ class DiagnosisGQLType(DjangoObjectType):
             'code': ['exact', 'icontains', 'istartswith'],
             'name': ['exact', 'icontains', 'istartswith'],
         }
+        connection_class = ExtendedConnection
+
 
 
 class ItemGQLType(DjangoObjectType):
@@ -27,6 +31,7 @@ class ItemGQLType(DjangoObjectType):
             'code': ['exact', 'icontains', 'istartswith'],
             'name': ['exact', 'icontains', 'istartswith'],
         }
+        connection_class = ExtendedConnection
 
 
 class ServiceGQLType(DjangoObjectType):
@@ -38,6 +43,7 @@ class ServiceGQLType(DjangoObjectType):
             'code': ['exact', 'icontains', 'istartswith'],
             'name': ['exact', 'icontains', 'istartswith'],
         }
+        connection_class = ExtendedConnection
 
 
 class Query(graphene.ObjectType):
@@ -65,7 +71,6 @@ class Query(graphene.ObjectType):
                 Q(code__icontains=str) | Q(name__icontains=str)
             )
         else:
-            # TODO: pagination
             return Diagnosis.objects.all()
 
     def resolve_medical_items_str(self, info, **kwargs):
@@ -75,15 +80,13 @@ class Query(graphene.ObjectType):
                 Q(code__icontains=str) | Q(name__icontains=str)
             )
         else:
-            # TODO: pagination
             return Item.objects.all()
 
     def resolve_medical_services_str(self, info, **kwargs):
-        str = kwargs.get('str')
-        if str is not None:
+        qry = kwargs.get('str')
+        if qry is not None:
             return Service.objects.filter(
-                Q(code__icontains=str) | Q(name__icontains=str)
+                Q(code__icontains=qry) | Q(name__icontains=qry)
             )
         else:
-            # TODO: pagination
             return Service.objects.all()
