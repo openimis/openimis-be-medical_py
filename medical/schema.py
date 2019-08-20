@@ -12,6 +12,7 @@ class DiagnosisGQLType(DjangoObjectType):
         model = Diagnosis
         interfaces = (graphene.relay.Node,)
         filter_fields = {
+            'id': ['exact'],
             'code': ['exact', 'icontains', 'istartswith'],
             'name': ['exact', 'icontains', 'istartswith'],
         }
