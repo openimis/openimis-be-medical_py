@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from core import fields
 
@@ -19,6 +20,7 @@ class Diagnosis(models.Model):
 
 class Item(models.Model):
     id = models.AutoField(db_column='ItemID', primary_key=True)
+    uuid = models.UUIDField(db_column='ItemUUID', default=uuid.uuid4, unique = True)
     legacy_id = models.IntegerField(db_column='LegacyID', blank=True, null=True)
     code = models.CharField(db_column='ItemCode', max_length=6)
     name = models.CharField(db_column='ItemName', max_length=100)
@@ -40,6 +42,7 @@ class Item(models.Model):
 
 class Service(models.Model):
     id = models.AutoField(db_column='ServiceID', primary_key=True)
+    uuid = models.UUIDField(db_column='ServiceUUID', default=uuid.uuid4, unique = True)
     legacy_id = models.IntegerField(db_column='LegacyID', blank=True, null=True)
     category = models.CharField(db_column='ServCategory', max_length=1, blank=True, null=True)
     code = models.CharField(db_column='ServCode', max_length=6)

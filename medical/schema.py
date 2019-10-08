@@ -27,7 +27,7 @@ class ItemGQLType(DjangoObjectType):
         model = Item
         interfaces = (graphene.relay.Node,)
         filter_fields = {
-            'id': ['exact'],
+            'uuid': ['exact'],
             'code': ['exact', 'icontains', 'istartswith'],
             'name': ['exact', 'icontains', 'istartswith'],
         }
@@ -39,7 +39,7 @@ class ServiceGQLType(DjangoObjectType):
         model = Service
         interfaces = (graphene.relay.Node,)
         filter_fields = {
-            'id': ['exact'],
+            'uuid': ['exact'],
             'code': ['exact', 'icontains', 'istartswith'],
             'name': ['exact', 'icontains', 'istartswith'],
         }
