@@ -2,11 +2,14 @@ import re
 
 from core import ExtendedConnection
 from django.db.models import Q
+from django.core.exceptions import PermissionDenied
 import graphene
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 
 from .models import Diagnosis, Item, Service
+from .apps import MedicalConfig
+from django.utils.translation import gettext as _
 
 
 class DiagnosisGQLType(DjangoObjectType):
@@ -19,7 +22,6 @@ class DiagnosisGQLType(DjangoObjectType):
             'name': ['exact', 'icontains', 'istartswith'],
         }
         connection_class = ExtendedConnection
-
 
 
 class ItemGQLType(DjangoObjectType):
@@ -65,6 +67,8 @@ class Query(graphene.ObjectType):
     )
 
     def resolve_diagnoses_str(self, info, **kwargs):
+        if not info.context.user.has_perms(MedicalConfig.gql_query_diagnosis_perms):
+            raise PermissionDenied(_("unauthorized"))
         str = kwargs.get('str')
         if str is not None:
             return Diagnosis.objects.filter(
@@ -74,6 +78,8 @@ class Query(graphene.ObjectType):
             return Diagnosis.objects.all()
 
     def resolve_medical_items_str(self, info, **kwargs):
+        if not info.context.user.has_perms(MedicalConfig.gql_query_medical_items_perms):
+            raise PermissionDenied(_("unauthorized"))
         str = kwargs.get('str')
         if str is not None:
             return Item.objects.filter(
@@ -83,6 +89,8 @@ class Query(graphene.ObjectType):
             return Item.objects.all()
 
     def resolve_medical_services_str(self, info, **kwargs):
+        if not info.context.user.has_perms(MedicalConfig.gql_query_medical_services_perms):
+            raise PermissionDenied(_("unauthorized"))
         qry = kwargs.get('str')
         if qry is not None:
             return Service.objects.filter(
