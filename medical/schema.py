@@ -10,6 +10,7 @@ from graphene_django.filter import DjangoFilterConnectionField
 from .models import Diagnosis, Item, Service
 from .apps import MedicalConfig
 from django.utils.translation import gettext as _
+from core import filter_validity
 
 
 class DiagnosisGQLType(DjangoObjectType):
@@ -57,13 +58,15 @@ class Query(graphene.ObjectType):
     medical_items = DjangoFilterConnectionField(ItemGQLType)
     medical_items_str = DjangoFilterConnectionField(
         ItemGQLType,
-        str=graphene.String()
+        str=graphene.String(),
+        date=graphene.Date()
     )
 
     medical_services = DjangoFilterConnectionField(ServiceGQLType)
     medical_services_str = DjangoFilterConnectionField(
         ServiceGQLType,
-        str=graphene.String()
+        str=graphene.String(),
+        date=graphene.Date()
     )
 
     def resolve_diagnoses_str(self, info, **kwargs):
@@ -71,30 +74,32 @@ class Query(graphene.ObjectType):
             raise PermissionDenied(_("unauthorized"))
         str = kwargs.get('str')
         if str is not None:
-            return Diagnosis.objects.filter(
-                Q(code__icontains=str) | Q(name__icontains=str)
-            )
+            return Diagnosis.objects \
+                .filter(*filter_validity()) \
+                .filter(Q(code__icontains=str) | Q(name__icontains=str))
         else:
-            return Diagnosis.objects.all()
+            return Diagnosis.objects.filter(*filter_validity())
 
     def resolve_medical_items_str(self, info, **kwargs):
         if not info.context.user.has_perms(MedicalConfig.gql_query_medical_items_perms):
             raise PermissionDenied(_("unauthorized"))
         str = kwargs.get('str')
+        date = kwargs.get('date')
         if str is not None:
-            return Item.objects.filter(
-                Q(code__icontains=str) | Q(name__icontains=str)
-            )
+            return Item.objects \
+                .filter(*filter_validity(date)) \
+                .filter(Q(code__icontains=str) | Q(name__icontains=str))
         else:
-            return Item.objects.all()
+            return Item.objects.filter(*filter_validity(date))
 
     def resolve_medical_services_str(self, info, **kwargs):
         if not info.context.user.has_perms(MedicalConfig.gql_query_medical_services_perms):
             raise PermissionDenied(_("unauthorized"))
         qry = kwargs.get('str')
+        date = kwargs.get('date')
         if qry is not None:
-            return Service.objects.filter(
-                Q(code__icontains=qry) | Q(name__icontains=qry)
-            )
+            return Service.objects \
+                .filter(*filter_validity(date)) \
+                .filter(Q(code__icontains=qry) | Q(name__icontains=qry))
         else:
-            return Service.objects.all()
+            return Service.objects.filter(*filter_validity(date))
