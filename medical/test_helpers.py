@@ -35,7 +35,7 @@ def create_test_item(item_type, valid=True, custom_props=None):
             "type": item_type,
             "name": "Test item",
             "price": 100,
-            "patient_category": 1,
+            "patient_category": 15,
             "care_type": 1,
             "validity_from": "2019-06-01",
             "validity_to": None if valid else "2019-06-01",
