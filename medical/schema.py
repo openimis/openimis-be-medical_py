@@ -1,3 +1,5 @@
+import re
+
 from core import ExtendedConnection
 from django.db.models import Q
 from django.core.exceptions import PermissionDenied
