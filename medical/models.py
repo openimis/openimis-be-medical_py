@@ -2,6 +2,9 @@ import uuid
 from django.db import models
 from core import fields
 from core import models as core_models
+from graphql import ResolveInfo
+from django.conf import settings
+import core
 
 
 class Diagnosis(core_models.VersionedModel):
@@ -14,6 +17,24 @@ class Diagnosis(core_models.VersionedModel):
 
     def __str__(self):
         return self.code + " " + self.name
+
+    @classmethod
+    def filter_queryset(cls, queryset=None):
+        if queryset is None:
+            queryset = cls.objects.all()
+        queryset = queryset.filter(*core.filter_validity())
+        return queryset
+
+    @classmethod
+    def get_queryset(cls, queryset, user):
+        queryset = Diagnosis.filter_queryset(queryset)
+        # GraphQL calls with an info object while Rest calls with the user itself
+        if isinstance(user, ResolveInfo):
+            user = user.context.user
+        if settings.ROW_SECURITY and user.is_anonymous:
+            return queryset.filter(id=-1)
+
+        return queryset
 
     class Meta:
         managed = False
@@ -45,6 +66,24 @@ class Item(models.Model):
 
     def __str__(self):
         return self.code + " " + self.name
+
+    @classmethod
+    def filter_queryset(cls, queryset=None):
+        if queryset is None:
+            queryset = cls.objects.all()
+        queryset = queryset.filter(*core.filter_validity())
+        return queryset
+
+    @classmethod
+    def get_queryset(cls, queryset, user):
+        queryset = Item.filter_queryset(queryset)
+        # GraphQL calls with an info object while Rest calls with the user itself
+        if isinstance(user, ResolveInfo):
+            user = user.context.user
+        if settings.ROW_SECURITY and user.is_anonymous:
+            return queryset.filter(id=-1)
+
+        return queryset
 
     class Meta:
         managed = False
@@ -81,6 +120,24 @@ class Service(models.Model):
 
     def __str__(self):
         return self.code + " " + self.name
+
+    @classmethod
+    def filter_queryset(cls, queryset=None):
+        if queryset is None:
+            queryset = cls.objects.all()
+        queryset = queryset.filter(*core.filter_validity())
+        return queryset
+
+    @classmethod
+    def get_queryset(cls, queryset, user):
+        queryset = Service.filter_queryset(queryset)
+        # GraphQL calls with an info object while Rest calls with the user itself
+        if isinstance(user, ResolveInfo):
+            user = user.context.user
+        if settings.ROW_SECURITY and user.is_anonymous:
+            return queryset.filter(id=-1)
+
+        return queryset
 
     class Meta:
         managed = False

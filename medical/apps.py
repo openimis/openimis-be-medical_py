@@ -12,7 +12,7 @@ DEFAULT_CFG = {
 class MedicalConfig(AppConfig):
     name = MODULE_NAME
 
-    gql_query_insurees_perms = []
+    gql_query_diagnosis_perms = []
     gql_query_medical_items_perms = []
     gql_query_medical_services_perms = []
 
