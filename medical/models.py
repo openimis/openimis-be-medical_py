@@ -1,4 +1,6 @@
 import uuid
+
+from core.models import VersionedModel, ObjectMutation
 from django.db import models
 from core import fields
 from core import models as core_models
@@ -41,26 +43,17 @@ class Diagnosis(core_models.VersionedModel):
         db_table = 'tblICDCodes'
 
 
-class Item(models.Model):
+class Item(VersionedModel):
     id = models.AutoField(db_column='ItemID', primary_key=True)
-    uuid = models.CharField(db_column='ItemUUID',
-                            max_length=36, default=uuid.uuid4, unique=True)
-    legacy_id = models.IntegerField(
-        db_column='LegacyID', blank=True, null=True)
+    uuid = models.CharField(db_column='ItemUUID', max_length=36, default=uuid.uuid4, unique=True)
     code = models.CharField(db_column='ItemCode', max_length=6)
     name = models.CharField(db_column='ItemName', max_length=100)
     type = models.CharField(db_column='ItemType', max_length=1)
-    package = models.CharField(
-        db_column='ItemPackage', max_length=255, blank=True, null=True)
-    price = models.DecimalField(
-        db_column='ItemPrice', max_digits=18, decimal_places=2)
+    package = models.CharField(db_column='ItemPackage', max_length=255, blank=True, null=True)
+    price = models.DecimalField(db_column='ItemPrice', max_digits=18, decimal_places=2)
     care_type = models.CharField(db_column='ItemCareType', max_length=1)
-    frequency = models.SmallIntegerField(
-        db_column='ItemFrequency', blank=True, null=True)
+    frequency = models.SmallIntegerField(db_column='ItemFrequency', blank=True, null=True)
     patient_category = models.SmallIntegerField(db_column='ItemPatCat')
-    validity_from = fields.DateTimeField(db_column='ValidityFrom')
-    validity_to = fields.DateTimeField(
-        db_column='ValidityTo', blank=True, null=True)
     audit_user_id = models.IntegerField(db_column='AuditUserID')
     # row_id = models.BinaryField(db_column='RowID', blank=True, null=True)
 
@@ -89,33 +82,29 @@ class Item(models.Model):
         managed = False
         db_table = 'tblItems'
 
+    TYPE_DRUG = "D"
+    TYPE_MEDICAL_CONSUMABLE = "M"
 
-class Service(models.Model):
+
+class Service(VersionedModel):
     id = models.AutoField(db_column='ServiceID', primary_key=True)
     uuid = models.CharField(db_column='ServiceUUID',
                             max_length=36, default=uuid.uuid4, unique=True)
-    legacy_id = models.IntegerField(
-        db_column='LegacyID', blank=True, null=True)
-    category = models.CharField(
-        db_column='ServCategory', max_length=1, blank=True, null=True)
+    # legacy_id = models.IntegerField(db_column='LegacyID', blank=True, null=True)
+    category = models.CharField(db_column='ServCategory', max_length=1, blank=True, null=True)
     code = models.CharField(db_column='ServCode', max_length=6)
     name = models.CharField(db_column='ServName', max_length=100)
     type = models.CharField(db_column='ServType', max_length=1)
     level = models.CharField(db_column='ServLevel', max_length=1)
-    price = models.DecimalField(
-        db_column='ServPrice', max_digits=18, decimal_places=2)
+    price = models.DecimalField(db_column='ServPrice', max_digits=18, decimal_places=2)
     care_type = models.CharField(db_column='ServCareType', max_length=1)
-    frequency = models.SmallIntegerField(
-        db_column='ServFrequency', blank=True, null=True)
+    frequency = models.SmallIntegerField(db_column='ServFrequency', blank=True, null=True)
     patient_category = models.SmallIntegerField(db_column='ServPatCat')
 
-    validity_from = fields.DateTimeField(
-        db_column='ValidityFrom', blank=True, null=True)
-    validity_to = fields.DateTimeField(
-        db_column='ValidityTo', blank=True, null=True)
-
-    audit_user_id = models.IntegerField(
-        db_column='AuditUserID', blank=True, null=True)
+    # validity_from = fields.DateTimeField(db_column='ValidityFrom', blank=True, null=True)
+    # validity_to = fields.DateTimeField(db_column='ValidityTo', blank=True, null=True)
+    #
+    audit_user_id = models.IntegerField(db_column='AuditUserID', blank=True, null=True)
     # row_id = models.BinaryField(db_column='RowID', blank=True, null=True)
 
     def __str__(self):
@@ -162,3 +151,21 @@ class Service(models.Model):
     LEVEL_VISIT = "V"
     LEVEL_DAY_HOSPITAL = "D"
     LEVEL_HOSPITAL_CARE = "H"
+
+
+class ItemMutation(core_models.UUIDModel, ObjectMutation):
+    item = models.ForeignKey(Item, models.DO_NOTHING, related_name='mutations')
+    mutation = models.ForeignKey(core_models.MutationLog, models.DO_NOTHING, related_name='items')
+
+    class Meta:
+        managed = True
+        db_table = "medical_ItemMutation"
+
+
+class ServiceMutation(core_models.UUIDModel, ObjectMutation):
+    service = models.ForeignKey(Service, models.DO_NOTHING, related_name='mutations')
+    mutation = models.ForeignKey(core_models.MutationLog, models.DO_NOTHING, related_name='services')
+
+    class Meta:
+        managed = True
+        db_table = "medical_ServiceMutation"
