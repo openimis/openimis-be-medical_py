@@ -2,7 +2,6 @@ import uuid
 
 from core.models import VersionedModel, ObjectMutation
 from django.db import models
-from core import fields
 from core import models as core_models
 from graphql import ResolveInfo
 from django.conf import settings

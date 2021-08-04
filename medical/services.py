@@ -1,4 +1,3 @@
-from medical.models import Service, Item
 from gettext import gettext as _
 
 
