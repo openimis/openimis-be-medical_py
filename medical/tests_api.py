@@ -1,25 +1,38 @@
 import base64
 import json
+from dataclasses import dataclass
 
+from core.models import User
 from core.test_helpers import create_test_interactive_user
 from graphene_django.utils.testing import GraphQLTestCase
 from graphql_jwt.shortcuts import get_token
 from medical.models import Item
 from medical.test_helpers import create_test_item, create_test_service
 from rest_framework import status
+from django.conf import settings
+# from openIMIS import schema
+
+
+@dataclass
+class DummyContext:
+    """ Just because we need a context to generate. """
+    user: User
 
 
 class MedicalGQLTestCase(GraphQLTestCase):
-    GRAPHQL_URL = '/graphql'
+    GRAPHQL_URL = f'/{settings.SITE_ROOT()}graphql'
+    # This is required by some version of graphene but is never used. It should be set to the schema but the import
+    # is shown as an error in the IDE, so leaving it as True.
+    GRAPHQL_SCHEMA = True
     admin_user = None
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         cls.admin_user = create_test_interactive_user(username="testMedicalAdmin")
-        cls.admin_token = get_token(cls.admin_user)
+        cls.admin_token = get_token(cls.admin_user, DummyContext(user=cls.admin_user))
         cls.noright_user = create_test_interactive_user(username="testMedicalNoRight", roles=[1])
-        cls.noright_token = get_token(cls.noright_user)
+        cls.noright_token = get_token(cls.noright_user, DummyContext(user=cls.noright_user))
         cls.test_item = create_test_item(item_type="M", custom_props={
             "name": "Test name API", "code": "TSTAP0", "package": "box of 12"})
         cls.test_service = create_test_service(category="A", custom_props={
