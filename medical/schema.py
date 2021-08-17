@@ -113,7 +113,7 @@ class Query(graphene.ObjectType):
                                  **kwargs):
         if not info.context.user.has_perms(MedicalConfig.gql_query_medical_items_perms):
             raise PermissionDenied(_("unauthorized"))
-        queryset = Item.get_queryset(None, user=info.context.user)
+        queryset = Item.get_queryset(None, user=info.context.user, show_history=show_history)
         if client_mutation_id:
             queryset = queryset.filter(mutations__mutation__client_mutation_id=client_mutation_id)
         if not show_history:
@@ -136,7 +136,7 @@ class Query(graphene.ObjectType):
                                  **kwargs):
         if not info.context.user.has_perms(MedicalConfig.gql_query_medical_services_perms):
             raise PermissionDenied(_("unauthorized"))
-        queryset = Service.get_queryset(None, user=info.context.user)
+        queryset = Service.get_queryset(None, user=info.context.user, show_history=show_history)
         if client_mutation_id:
             queryset = queryset.filter(mutations__mutation__client_mutation_id=client_mutation_id)
         if not show_history:

@@ -67,8 +67,11 @@ class Item(VersionedModel):
         return queryset
 
     @classmethod
-    def get_queryset(cls, queryset, user):
-        queryset = Item.filter_queryset(queryset)
+    def get_queryset(cls, queryset, user, show_history=False):
+        if show_history:
+            queryset = Item.objects.all()
+        else:
+            queryset = Item.filter_queryset(queryset)
         # GraphQL calls with an info object while Rest calls with the user itself
         if isinstance(user, ResolveInfo):
             user = user.context.user
@@ -117,8 +120,11 @@ class Service(VersionedModel):
         return queryset
 
     @classmethod
-    def get_queryset(cls, queryset, user):
-        queryset = Service.filter_queryset(queryset)
+    def get_queryset(cls, queryset, user, show_history=False):
+        if show_history:
+            queryset = Service.objects.all()
+        else:
+            queryset = Service.filter_queryset(queryset)
         # GraphQL calls with an info object while Rest calls with the user itself
         if isinstance(user, ResolveInfo):
             user = user.context.user
