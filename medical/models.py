@@ -6,6 +6,7 @@ from core import models as core_models
 from graphql import ResolveInfo
 from django.conf import settings
 import core
+from medical.apps import MedicalConfig
 
 
 class Diagnosis(core_models.VersionedModel):
@@ -68,13 +69,14 @@ class Item(VersionedModel):
 
     @classmethod
     def get_queryset(cls, queryset, user, show_history=False):
-        if show_history:
-            queryset = Item.objects.all()
-        else:
-            queryset = Item.filter_queryset(queryset)
         # GraphQL calls with an info object while Rest calls with the user itself
         if isinstance(user, ResolveInfo):
             user = user.context.user
+        # OMT-281 only allow history if the user has full permission
+        if show_history and user.has_perms(MedicalConfig.gql_query_medical_items_perms):
+            queryset = Item.objects.all()
+        else:
+            queryset = Item.filter_queryset(queryset)
         if settings.ROW_SECURITY and user.is_anonymous:
             return queryset.filter(id=-1)
 
@@ -121,13 +123,15 @@ class Service(VersionedModel):
 
     @classmethod
     def get_queryset(cls, queryset, user, show_history=False):
-        if show_history:
-            queryset = Service.objects.all()
-        else:
-            queryset = Service.filter_queryset(queryset)
         # GraphQL calls with an info object while Rest calls with the user itself
         if isinstance(user, ResolveInfo):
             user = user.context.user
+
+        # OMT-281 only allow history if the user has full permission
+        if show_history and user.has_perms(MedicalConfig.gql_query_medical_services_perms):
+            queryset = Service.objects.all()
+        else:
+            queryset = Service.filter_queryset(queryset)
         if settings.ROW_SECURITY and user.is_anonymous:
             return queryset.filter(id=-1)
 
