@@ -80,11 +80,12 @@ jobs:
       - name: Django tests
         working-directory: ./openimis/openIMIS
         run: |
+          export MODULE_NAME="$(echo $GITHUB_REPOSITORY | sed 's#^openimis/openimis-be-\(.*\)_py$#\1#')"
           python -V
           ls -l
           python manage.py migrate
           python init_test_db.py | grep . | uniq -c
-          python manage.py test --keepdb
+          python manage.py test --keepdb $MODULE_NAME
         env:
           SECRET_KEY: secret
           DEBUG: true
