@@ -4,12 +4,14 @@ from dataclasses import dataclass
 
 from core.models import User
 from core.test_helpers import create_test_interactive_user
+from django.conf import settings
 from graphene_django.utils.testing import GraphQLTestCase
 from graphql_jwt.shortcuts import get_token
 from medical.models import Item
 from medical.test_helpers import create_test_item, create_test_service
 from rest_framework import status
-from django.conf import settings
+
+
 # from openIMIS import schema
 
 
@@ -33,6 +35,9 @@ class MedicalGQLTestCase(GraphQLTestCase):
         cls.admin_token = get_token(cls.admin_user, DummyContext(user=cls.admin_user))
         cls.noright_user = create_test_interactive_user(username="testMedicalNoRight", roles=[1])
         cls.noright_token = get_token(cls.noright_user, DummyContext(user=cls.noright_user))
+        cls.test_item_hist = create_test_item(item_type="M", custom_props={
+            "name": "Test history API", "code": "TSTAP9"})
+        cls.test_item_hist.save_history()
         cls.test_item = create_test_item(item_type="M", custom_props={
             "name": "Test name API", "code": "TSTAP0", "package": "box of 12"})
         cls.test_service = create_test_service(category="A", custom_props={
@@ -177,18 +182,34 @@ class MedicalGQLTestCase(GraphQLTestCase):
         self.assertResponseHasErrors(response)
 
     def test_no_right_services_query(self):
-        """ Query with a valid token but not the right to perform this operation """
-        response = self.query(' query { medicalServices { edges { node { id name } } } } ',
-                              headers={"HTTP_AUTHORIZATION": f"JWT {self.noright_token}"})
+        """
+        Query with a valid token but not the right to perform this full operation.
+        Unlike some other modules, medical services and items are available to everyone but limited,
+        i.e. no showHistory so we're accessing a modified service and make sure that history is not available.
+        """
+        query = 'query { medicalServices(showHistory: true, code:"M1") { edges { node { id name } } } }'
+        response = self.query(query, headers={"HTTP_AUTHORIZATION": f"JWT {self.noright_token}"})
+        response_admin = self.query(query, headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"})
 
-        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+        content_admin = json.loads(response_admin.content)
+        self.assertEqual(len(content["data"]["medicalServices"]["edges"]), 1)
+        self.assertEqual(len(content_admin["data"]["medicalServices"]["edges"]), 2)
 
     def test_no_right_items_query(self):
-        """ Query with a valid token but not the right to perform this operation """
-        response = self.query(' query { medicalItems { edges { node { id name } } } } ',
-                              headers={"HTTP_AUTHORIZATION": f"JWT {self.noright_token}"})
+        """
+        Query with a valid token but not the right to perform this full operation.
+        Unlike some other modules, medical services and items are available to everyone but limited,
+        i.e. no showHistory so we're accessing a modified service and make sure that history is not available.
+        """
+        query = 'query { medicalItems(showHistory: true, code:"TSTAP9") { edges { node { id name } } } }'
+        response = self.query(query, headers={"HTTP_AUTHORIZATION": f"JWT {self.noright_token}"})
+        response_admin = self.query(query, headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"})
 
-        self.assertResponseHasErrors(response)
+        content = json.loads(response.content)
+        content_admin = json.loads(response_admin.content)
+        self.assertEqual(len(content["data"]["medicalItems"]["edges"]), 1)
+        self.assertEqual(len(content_admin["data"]["medicalItems"]["edges"]), 2)
 
     def test_basic_items_query(self):
         response = self.query(
