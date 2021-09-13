@@ -50,8 +50,8 @@ jobs:
         run: |
           export MODULE_NAME="$(echo $GITHUB_REPOSITORY | sed 's#^openimis/openimis-be-\(.*\)_py$#\1#')"
           echo "the local module called $MODULE_NAME will be injected in openIMIS .json"
-          echo $(jq   "(.modules[]  | select(.name == \"$MODULE_NAME\") | .pip)|=\"../current-module\"" openimis.json) > openimis.json
-          cat openimis.json
+          jq --arg name "$MODULE_NAME" 'if [.modules[].name  ==  ($name)]| max then (.modules[]  | select(.name == ($name)) | .pip)|="../current-module" else .modules |= .+ [{name:($name), pip:"../current-module"}] end' openimis.json
+          echo $(jq --arg name "$MODULE_NAME" 'if [.modules[].name  ==  ($name)]| max then (.modules[]  | select(.name == ($name)) | .pip)|="../current-module" else .modules |= .+ [{name:($name), pip:"../current-module"}] end' openimis.json)  > openimis.json
       - name: Install openIMIS Python dependencies
         working-directory: ./openimis
         run: |
