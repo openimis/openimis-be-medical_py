@@ -66,24 +66,30 @@ class Query(graphene.ObjectType):
         ItemGQLType,
         client_mutation_id=graphene.String(),
         show_history=graphene.Boolean(),
-        orderBy=graphene.List(of_type=graphene.String))
+        orderBy=graphene.List(of_type=graphene.String),
+        pricelist_uuid=graphene.UUID(),
+    )
     medical_items_str = OrderedDjangoFilterConnectionField(
         ItemGQLType,
         str=graphene.String(),
         date=graphene.Date(),
-        orderBy=graphene.List(of_type=graphene.String)
+        orderBy=graphene.List(of_type=graphene.String),
+        pricelist_uuid=graphene.UUID(),
     )
 
     medical_services = OrderedDjangoFilterConnectionField(
         ServiceGQLType,
         client_mutation_id=graphene.String(),
         show_history=graphene.Boolean(),
-        orderBy=graphene.List(of_type=graphene.String))
+        orderBy=graphene.List(of_type=graphene.String),
+        pricelist_uuid=graphene.UUID(),
+    )
     medical_services_str = OrderedDjangoFilterConnectionField(
         ServiceGQLType,
         str=graphene.String(),
         date=graphene.Date(),
-        orderBy=graphene.List(of_type=graphene.String)
+        orderBy=graphene.List(of_type=graphene.String),
+        pricelist_uuid=graphene.UUID(),
     )
 
     def resolve_diagnoses_str(self, info, **kwargs):
@@ -97,57 +103,85 @@ class Query(graphene.ObjectType):
         else:
             return Diagnosis.objects.filter(*filter_validity())
 
-    def resolve_medical_items_str(self, info, **kwargs):
+    def resolve_medical_items_str(self, info, pricelist_uuid=None, date=None, **kwargs):
         # OMT-281 allow listing of medical services even if the query right is not given
         # if not info.context.user.has_perms(MedicalConfig.gql_query_medical_items_perms):
         if info.context.user.is_anonymous:
             raise PermissionDenied(_("unauthorized"))
-        search_str = kwargs.get('str')
-        date = kwargs.get('date')
+        search_str = kwargs.get("str")
+        q = Item.objects.filter(*filter_validity(date))
+        if pricelist_uuid is not None:
+            q = q.filter(pricelist_details__items_pricelist__uuid=pricelist_uuid)
         if search_str is not None:
-            return Item.objects \
-                .filter(*filter_validity(date)) \
-                .filter(Q(code__icontains=search_str) | Q(name__icontains=search_str))
-        else:
-            return Item.objects.filter(*filter_validity(date))
+            q = q.filter(Q(code__icontains=search_str) | Q(name__icontains=search_str))
+        return q
 
-    def resolve_medical_items(self, info, show_history=False, client_mutation_id=None,
-                                 **kwargs):
+    def resolve_medical_items(
+        self,
+        info,
+        show_history=False,
+        pricelist_uuid=None,
+        client_mutation_id=None,
+        **kwargs
+    ):
 
         # OMT-281 allow listing of medical services even if the query right is not given
-        #if not info.context.user.has_perms(MedicalConfig.gql_query_medical_items_perms):
+        # if not info.context.user.has_perms(MedicalConfig.gql_query_medical_items_perms):
         if info.context.user.is_anonymous:
             raise PermissionDenied(_("unauthorized"))
-        queryset = Item.get_queryset(None, user=info.context.user, show_history=show_history)
+        queryset = Item.get_queryset(
+            None, user=info.context.user, show_history=show_history
+        )
+        if pricelist_uuid is not None:
+            queryset = queryset.filter(
+                pricelist_details__items_pricelist__uuid=pricelist_uuid
+            )
         if client_mutation_id:
-            queryset = queryset.filter(mutations__mutation__client_mutation_id=client_mutation_id)
+            queryset = queryset.filter(
+                mutations__mutation__client_mutation_id=client_mutation_id
+            )
         if not show_history:
             queryset = queryset.filter(*filter_validity(**kwargs))
         return gql_optimizer.query(queryset, info)
 
-    def resolve_medical_services_str(self, info, **kwargs):
-        # OMT-281 allow listing of medical services even if the query right is not given
-        #if not info.context.user.has_perms(MedicalConfig.gql_query_medical_services_perms):
-        if info.context.user.is_anonymous:
-            raise PermissionDenied(_("unauthorized"))
-        search_str = kwargs.get('str')
-        date = kwargs.get('date')
-        if search_str is not None:
-            return Service.objects \
-                .filter(*filter_validity(date)) \
-                .filter(Q(code__icontains=search_str) | Q(name__icontains=search_str))
-        else:
-            return Service.objects.filter(*filter_validity(date))
-
-    def resolve_medical_services(self, info, show_history=False, client_mutation_id=None,
-                                 **kwargs):
+    def resolve_medical_services_str(
+        self, info, pricelist_uuid=None, date=None, **kwargs
+    ):
         # OMT-281 allow listing of medical services even if the query right is not given
         # if not info.context.user.has_perms(MedicalConfig.gql_query_medical_services_perms):
         if info.context.user.is_anonymous:
             raise PermissionDenied(_("unauthorized"))
-        queryset = Service.get_queryset(None, user=info.context.user, show_history=show_history)
+        search_str = kwargs.get("str")
+        q = Service.objects.filter(*filter_validity(date))
+        if pricelist_uuid is not None:
+            q = q.filter(pricelist_details__services_pricelist__uuid=pricelist_uuid)
+        if search_str is not None:
+            q = q.filter(Q(code__icontains=search_str) | Q(name__icontains=search_str))
+        return q
+
+    def resolve_medical_services(
+        self,
+        info,
+        show_history=False,
+        pricelist_uuid=None,
+        client_mutation_id=None,
+        **kwargs
+    ):
+        # OMT-281 allow listing of medical services even if the query right is not given
+        # if not info.context.user.has_perms(MedicalConfig.gql_query_medical_services_perms):
+        if info.context.user.is_anonymous:
+            raise PermissionDenied(_("unauthorized"))
+        queryset = Service.get_queryset(
+            None, user=info.context.user, show_history=show_history
+        )
+        if pricelist_uuid is not None:
+            queryset = queryset.filter(
+                pricelist_details__services_pricelist__uuid=pricelist_uuid
+            )
         if client_mutation_id:
-            queryset = queryset.filter(mutations__mutation__client_mutation_id=client_mutation_id)
+            queryset = queryset.filter(
+                mutations__mutation__client_mutation_id=client_mutation_id
+            )
         if not show_history:
             queryset = queryset.filter(*filter_validity(**kwargs))
         return gql_optimizer.query(queryset, info)
