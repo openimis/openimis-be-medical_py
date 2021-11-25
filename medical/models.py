@@ -51,6 +51,7 @@ class Item(VersionedModel):
     type = models.CharField(db_column='ItemType', max_length=1)
     package = models.CharField(db_column='ItemPackage', max_length=255, blank=True, null=True)
     price = models.DecimalField(db_column='ItemPrice', max_digits=18, decimal_places=2)
+    quantity = models.DecimalField(db_column='Quantity', max_digits=18, decimal_places=2, null=True)
     care_type = models.CharField(db_column='ItemCareType', max_length=1)
     frequency = models.SmallIntegerField(db_column='ItemFrequency', blank=True, null=True)
     patient_category = models.SmallIntegerField(db_column='ItemPatCat')
