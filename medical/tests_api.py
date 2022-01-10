@@ -65,7 +65,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
                 }
             }
             ''' % (code,),
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -88,7 +88,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
                 }
             }
             ''',
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -116,7 +116,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
                 }
             }
             ''' % (arg,),
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -149,7 +149,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
                 }
             }
             ''' % (arg,),
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -188,8 +188,8 @@ class MedicalGQLTestCase(GraphQLTestCase):
         i.e. no showHistory so we're accessing a modified service and make sure that history is not available.
         """
         query = 'query { medicalServices(showHistory: true, code:"M1") { edges { node { id name } } } }'
-        response = self.query(query, headers={"HTTP_AUTHORIZATION": f"JWT {self.noright_token}"})
-        response_admin = self.query(query, headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"})
+        response = self.query(query, headers={"HTTP_AUTHORIZATION": f"Bearer {self.noright_token}"})
+        response_admin = self.query(query, headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"})
 
         content = json.loads(response.content)
         content_admin = json.loads(response_admin.content)
@@ -203,8 +203,8 @@ class MedicalGQLTestCase(GraphQLTestCase):
         i.e. no showHistory so we're accessing a modified service and make sure that history is not available.
         """
         query = 'query { medicalItems(showHistory: true, code:"TSTAP9") { edges { node { id name } } } }'
-        response = self.query(query, headers={"HTTP_AUTHORIZATION": f"JWT {self.noright_token}"})
-        response_admin = self.query(query, headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"})
+        response = self.query(query, headers={"HTTP_AUTHORIZATION": f"Bearer {self.noright_token}"})
+        response_admin = self.query(query, headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"})
 
         content = json.loads(response.content)
         content_admin = json.loads(response_admin.content)
@@ -225,7 +225,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
                 }
             }
             ''',
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -263,7 +263,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
                 }
             }
             ''',
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -294,7 +294,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
               }
             }
             ''',
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -337,7 +337,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
               }
             }
             ''' % self.test_item_update.uuid,
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -375,7 +375,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
               }
             }
             ''' % self.test_service_update.uuid,
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -406,7 +406,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
               }
             }
             ''' % self.test_service_delete.uuid,
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
@@ -432,7 +432,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
               }
             }
             ''' % self.test_item_delete.uuid,
-            headers={"HTTP_AUTHORIZATION": f"JWT {self.admin_token}"},
+            headers={"HTTP_AUTHORIZATION": f"Bearer {self.admin_token}"},
         )
 
         self.assertEquals(response.status_code, status.HTTP_200_OK)
