@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from medical.apps import MedicalConfig
 from medical.models import Service, ServiceMutation, Item, ItemMutation
 from medical.services import set_item_or_service_deleted
-
+from django.db import models
 
 class ServiceCodeInputType(graphene.String):
     @staticmethod

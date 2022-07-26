@@ -165,7 +165,7 @@ class Service(VersionedModel):
     LEVEL_HOSPITAL_CARE = "H"
 
 
-class ServiceContainedPackage(VersionedModel):
+class ServiceContainedPackage(models.Model):
     """class representing relation between package and services """
 
     idSCP = models.AutoField(primary_key=True)
