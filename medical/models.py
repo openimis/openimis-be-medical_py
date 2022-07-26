@@ -100,6 +100,7 @@ class Service(VersionedModel):
     name = models.CharField(db_column='ServName', max_length=100)
     type = models.CharField(db_column='ServType', max_length=1)
     packagetype = models.CharField(db_column='ServPackageType', max_length=1, default="S")
+    manualPrice = models.BooleanField(default=False)
     level = models.CharField(db_column='ServLevel', max_length=1)
     price = models.DecimalField(db_column='ServPrice', max_digits=18, decimal_places=2)
     care_type = models.CharField(db_column='ServCareType', max_length=1)
@@ -139,7 +140,7 @@ class Service(VersionedModel):
         return queryset
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tblServices'
 
     TYPE_PREVENTATIVE = "P"
@@ -162,6 +163,37 @@ class Service(VersionedModel):
     LEVEL_DAY_HOSPITAL = "D"
     LEVEL_HOSPITAL_CARE = "H"
 
+
+class ServiceContainedPackage(VersionedModel):
+    """class representing relation between package and services """
+
+    idSCP = models.AutoField(primary_key=True)
+    medical_serviceId = models.ForeignKey(Service,
+                                          models.DO_NOTHING, db_column="ServiceID")
+    SCPQuantity = models.IntegerField(db_column="PackageQuantity",
+                                      blank=True, null=True)
+    SCPDate = models.DateTimeField(db_column="PackageDate",
+                                   blank=True, null=True)
+    SCPPrice = models.DecimalField(db_column="PackagePrice",
+                                   max_digits=18, decimal_places=2, blank=True, null=True)
+
+    @classmethod
+    def sum_quantityservice(cls):
+        """ this fucntion returns the sum
+        of the values of the entries of SCPQuantity field """
+        return cls.objects.all().aggregate(sum('SCPQuantity'))
+
+    @classmethod
+    def delete_servicecontainedpackrow(cls, id_servicerow):
+        """ delete a row in ServiceContainedPackage table """
+        try:
+            cls.objects.find(idSCP=id_servicerow).delete()
+        except cls.DoesNotExist:
+            print(f"Service  with id {id_servicerow} does not exist.")
+
+    class Meta:
+        managed = True
+        db_table = 'tblServiceContainedPackage'
 
 class ItemMutation(core_models.UUIDModel, ObjectMutation):
     item = models.ForeignKey(Item, models.DO_NOTHING, related_name='mutations')
