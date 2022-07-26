@@ -50,6 +50,7 @@ class ServiceGQLType(DjangoObjectType):
             'code': ['exact', 'icontains', 'istartswith'],
             'name': ['exact', 'icontains', 'istartswith'],
             'type': ['exact'],
+            'packagetype': ['exact', 'in'],
             'care_type': ['exact'],
             'category': ['exact'],
         }

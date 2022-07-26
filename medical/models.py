@@ -99,11 +99,12 @@ class Service(VersionedModel):
     code = models.CharField(db_column='ServCode', max_length=6)
     name = models.CharField(db_column='ServName', max_length=100)
     type = models.CharField(db_column='ServType', max_length=1)
+    packagetype = models.CharField(db_column='ServPackageType', max_length=1, default="S")
     level = models.CharField(db_column='ServLevel', max_length=1)
     price = models.DecimalField(db_column='ServPrice', max_digits=18, decimal_places=2)
     care_type = models.CharField(db_column='ServCareType', max_length=1)
     frequency = models.SmallIntegerField(db_column='ServFrequency', blank=True, null=True)
-    patient_category = models.SmallIntegerField(db_column='ServPatCat')
+    patient_category = models.SmallIntegerField(db_column='ServPatCat', default="15")
 
     # validity_from = fields.DateTimeField(db_column='ValidityFrom', blank=True, null=True)
     # validity_to = fields.DateTimeField(db_column='ValidityTo', blank=True, null=True)
