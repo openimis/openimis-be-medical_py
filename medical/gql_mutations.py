@@ -30,38 +30,6 @@ class ServiceCodeInputType(graphene.String):
         assert_string_length(result, 6)
         return result
 
-# The following Enums would be more GraphQL friendly than the current String types but they are less configurable
-# and actually make the frontend work harder, so leaving them here for illustration purpose, feel free to remove.
-#
-# SVC_TYPE_PREVENTATIVE = "PREVENTATIVE"
-# SVC_TYPE_CURATIVE = "CURATIVE"
-# ServiceTypeEnum = graphene.Enum("ServiceTypes", [
-#     (SVC_TYPE_PREVENTATIVE, Service.TYPE_PREVENTATIVE),
-#     (SVC_TYPE_CURATIVE, Service.TYPE_CURATIVE),
-# ])
-#
-#
-# CARE_TYPE_IN_PATIENT = "IN"
-# CARE_TYPE_OUT_PATIENT = "OUT"
-# CARE_TYPE_BOTH = "BOTH"
-# CareTypeEnum = graphene.Enum("CareTypes", [
-#     (CARE_TYPE_IN_PATIENT, Service.CARE_TYPE_IN_PATIENT),
-#     (CARE_TYPE_OUT_PATIENT, Service.CARE_TYPE_OUT_PATIENT),
-#     (CARE_TYPE_BOTH, Service.CARE_TYPE_BOTH),
-# ])
-
-
-# SERVICE_LEVEL_DAY_HOSPITAL = "DAY_HOSPITAL"
-# SERVICE_LEVEL_VISIT = "VISIT"
-# SERVICE_LEVEL_SIMPLE_SERVICE = "SIMPLE_SERVICE"
-# SERVICE_LEVEL_HOSPITAL_CARE = "HOSPITAL_CARE"
-# ServiceLevelEnum = graphene.Enum("ServiceLevels", [
-#     (SERVICE_LEVEL_DAY_HOSPITAL, Service.LEVEL_DAY_HOSPITAL),
-#     (SERVICE_LEVEL_VISIT, Service.LEVEL_VISIT),
-#     (SERVICE_LEVEL_SIMPLE_SERVICE, Service.LEVEL_SIMPLE_SERVICE),
-#     (SERVICE_LEVEL_HOSPITAL_CARE, Service.LEVEL_HOSPITAL_CARE),
-# ])
-#
 
 PATIENT_CATEGORY_ADULT = "ADULT"
 PATIENT_CATEGORY_MINOR = "MINOR"

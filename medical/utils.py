@@ -23,7 +23,7 @@ def process_child_relation(user, data_children, service_id, children, create_hoo
 def item_create_hook(service_id, item):
     item.item_id = Item.objects.get(id=item.item_id)
     ServiceItem.objects.create(
-        servicelinked=service_id,
+        servicelinkedItem=service_id,
         item_id = item.item_id,
         price_asked = item.price_asked,
         qty_provided = item.qty_provided)
@@ -32,7 +32,7 @@ def item_create_hook(service_id, item):
 def service_create_hook(service_id, service):
     service.service = Item.objects.get(id=service.service_id)
     ServiceService.objects.create(
-        servicelinked=service_id,
+        servicelinkedService=service_id,
         service_id = service.service_id,
         price_asked = service.price_asked,
         qty_provided = service.qty_provided
