@@ -1,13 +1,15 @@
+import string
 import uuid
 
 from core.models import VersionedModel, ObjectMutation
 from django.db import models
+from django.utils import timezone as django_tz 
 from core import models as core_models
 from graphql import ResolveInfo
 from django.conf import settings
 import core
 from medical.apps import MedicalConfig
-
+from medical import models as medical_models
 
 class Diagnosis(core_models.VersionedModel):
     id = models.AutoField(db_column='ICDID', primary_key=True)
@@ -165,38 +167,46 @@ class Service(VersionedModel):
     LEVEL_HOSPITAL_CARE = "H"
 
 
-class ServiceContainedPackage(models.Model):
+class ServiceService(models.Model):
     """class representing relation between package and services """
-
     idSCP = models.AutoField(primary_key=True)
-    medical_serviceId = models.ForeignKey(Service,
-                                          models.DO_NOTHING, db_column="ServiceID")
-    SCPQuantity = models.IntegerField(db_column="PackageQuantity",
+    service = models.ForeignKey(Service, models.DO_NOTHING,
+                              db_column='ServiceId', related_name='servicesServices')
+    servicelinked = models.ForeignKey( Service,
+                                          models.DO_NOTHING, db_column="ServiceLinked")
+    qty_provided = models.IntegerField(db_column="qty",
                                       blank=True, null=True)
-    SCPDate = models.DateTimeField(db_column="PackageDate",
+    scpDate = models.DateTimeField(db_column="created_date", default=django_tz.now,
                                    blank=True, null=True)
-    SCPPrice = models.DecimalField(db_column="PackagePrice",
+    price_asked = models.DecimalField(db_column="price",
                                    max_digits=18, decimal_places=2, blank=True, null=True)
-
-    @classmethod
-    def sum_quantityservice(cls):
-        """ this fucntion returns the sum
-        of the values of the entries of SCPQuantity field """
-        return cls.objects.all().aggregate(sum('SCPQuantity'))
-
-    @classmethod
-    def delete_servicecontainedpackrow(cls, id_servicerow):
-        """ delete a row in ServiceContainedPackage table """
-        try:
-            cls.objects.find(idSCP=id_servicerow).delete()
-        except cls.DoesNotExist:
-            print(f"Service  with id {id_servicerow} does not exist.")
 
     class Meta:
         managed = True
         db_table = 'tblServiceContainedPackage'
 
-class ItemMutation(core_models.UUIDModel, ObjectMutation):
+
+class ServiceItem(models.Model):
+    """class representing relation between package and product """
+    idPCP = models.AutoField(primary_key=True)
+    item_id = models.ForeignKey(
+        medical_models.Item, models.DO_NOTHING, db_column='ItemID', related_name="item")                           
+    servicelinked = models.ForeignKey( Service,
+                                          models.DO_NOTHING, db_column="ServiceID",related_name='servicesLinked')
+    qty_provided = models.IntegerField(db_column="qty",
+                                      blank=True, null=True)
+    pcpDate = models.DateTimeField(db_column="created_date", default=django_tz.now,
+                                   blank=True, null=True)
+    price_asked = models.DecimalField(db_column="price",
+                                   max_digits=18, decimal_places=2, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = 'tblProductContainedPackage'
+
+
+
+class ItemMutation(core_models.UUIDModel, core_models.ObjectMutation):
     item = models.ForeignKey(Item, models.DO_NOTHING, related_name='mutations')
     mutation = models.ForeignKey(core_models.MutationLog, models.DO_NOTHING, related_name='items')
 
@@ -205,7 +215,7 @@ class ItemMutation(core_models.UUIDModel, ObjectMutation):
         db_table = "medical_ItemMutation"
 
 
-class ServiceMutation(core_models.UUIDModel, ObjectMutation):
+class ServiceMutation(core_models.UUIDModel, core_models.ObjectMutation):
     service = models.ForeignKey(Service, models.DO_NOTHING, related_name='mutations')
     mutation = models.ForeignKey(core_models.MutationLog, models.DO_NOTHING, related_name='services')
 

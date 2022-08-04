@@ -3,15 +3,17 @@ from gettext import gettext as _
 from operator import or_
 
 import graphene
+from graphene import InputObjectType
 from core import assert_string_length, PATIENT_CATEGORY_MASK_ADULT, PATIENT_CATEGORY_MASK_MALE, \
     PATIENT_CATEGORY_MASK_MINOR, PATIENT_CATEGORY_MASK_FEMALE
-from core.schema import OpenIMISMutation
+from core.schema import TinyInt, SmallInt, OpenIMISMutation
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError, PermissionDenied
 from medical.apps import MedicalConfig
-from medical.models import Service, ServiceMutation, Item, ItemMutation
+from medical.models import Service, ServiceMutation, Item, ItemMutation, ServiceService, ServiceItem
 from medical.services import set_item_or_service_deleted
 from django.db import models
+from medical.utils import process_items_relations, process_services_relations
 
 class ServiceCodeInputType(graphene.String):
     @staticmethod
@@ -73,6 +75,25 @@ PatientCategoriesEnum = graphene.Enum("PatientCategories", [
 ])
 
 
+
+class ServiceItemInputType(InputObjectType):
+    id = graphene.Int(required=False)
+    item_id = graphene.Int(required=True)
+    status = TinyInt(required=True)
+    qty_provided = graphene.Decimal(
+        max_digits=18, decimal_places=2, required=False)
+    price_asked = graphene.Decimal(
+        max_digits=18, decimal_places=2, required=False)
+
+class ServiceServiceInputType(InputObjectType):
+    id = graphene.Int(required=False)
+    service_id = graphene.Int(required=True)
+    status = TinyInt(required=True)
+    qty_provided = graphene.Decimal(
+        max_digits=18, decimal_places=2, required=False)
+    price_asked = graphene.Decimal(
+        max_digits=18, decimal_places=2, required=False)
+    
 class ItemOrServiceInputType(OpenIMISMutation.Input):
     id = graphene.Int(required=False, read_only=True)
     uuid = graphene.String(required=False)
@@ -88,7 +109,11 @@ class ItemOrServiceInputType(OpenIMISMutation.Input):
 
 class ServiceInputType(ItemOrServiceInputType):
     level = graphene.String(required=True)
+    packagetype = graphene.String(required=True)
+    manualPrice = graphene.String(required=False)
     category = graphene.String(required=False)
+    items = graphene.List(ServiceItemInputType, required=False)
+    services = graphene.List(ServiceServiceInputType, required=False)
 
 
 def reset_item_or_service_before_update(item_service):
@@ -107,6 +132,8 @@ def reset_item_or_service_before_update(item_service):
         "category", # service only
         "package",  # item only
         "quantity", # item only
+        "packagetype", #service only
+        "manualPrice", #service only
     ]
     for field in fields:
         if hasattr(item_service, field):
@@ -114,18 +141,27 @@ def reset_item_or_service_before_update(item_service):
 
 
 def update_or_create_item_or_service(data, user, item_service_model):
+    items = data.pop('items') if 'items' in data else []
+    services = data.pop('services') if 'services' in data else []
     client_mutation_id = data.pop('client_mutation_id', None)
     data.pop('client_mutation_label', None)
     item_service_uuid = data.pop('uuid') if 'uuid' in data else None
     # update_or_create(uuid=service_uuid, ...)
     # doesn't work because of explicit attempt to set null to uuid!
     data["audit_user_id"] = user.id_for_audit
+
     if item_service_uuid:
         item_service = item_service_model.objects.get(uuid=item_service_uuid)
         reset_item_or_service_before_update(item_service)
         [setattr(item_service, key, data[key]) for key in data]
     else:
         item_service = item_service_model.objects.create(**data)
+    
+    item_service_sub = 0
+    item_service_sub += process_items_relations(user, item_service, items)
+    service_service_sub = 0
+    service_service_sub += process_services_relations(user, item_service, services)
+    
     item_service.save()
     if client_mutation_id:
         if isinstance(item_service, Service):
@@ -226,7 +262,6 @@ class DeleteServiceMutation(OpenIMISMutation):
 class ItemInputType(ItemOrServiceInputType):
     package = graphene.String(required=True)
     quantity = graphene.Decimal()
-
 
 class CreateItemMutation(CreateOrUpdateItemOrServiceMutation):
     _mutation_module = "medical"
