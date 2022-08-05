@@ -169,7 +169,7 @@ class Service(VersionedModel):
 
 class ServiceService(models.Model):
     """class representing relation between package and services """
-    idSCP = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True, db_column='idSCP')
     service = models.ForeignKey(Service, models.DO_NOTHING,
                               db_column='ServiceId', related_name='servicesServices')
     servicelinkedService = models.ForeignKey( Service,
@@ -188,8 +188,8 @@ class ServiceService(models.Model):
 
 class ServiceItem(models.Model):
     """class representing relation between package and product """
-    idPCP = models.AutoField(primary_key=True)
-    item_id = models.ForeignKey(Item, models.DO_NOTHING, db_column='ItemID', related_name="itemsServices")                           
+    id = models.AutoField(primary_key=True, db_column='idPCP')
+    item = models.ForeignKey(Item, models.DO_NOTHING, db_column='ItemID', related_name="itemsServices")                           
     servicelinkedItem = models.ForeignKey( Service,
                                           models.DO_NOTHING, db_column="ServiceID",related_name='servicesLinked')
     qty_provided = models.IntegerField(db_column="qty",
