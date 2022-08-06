@@ -180,6 +180,7 @@ class ServiceService(models.Model):
                                    blank=True, null=True)
     price_asked = models.DecimalField(db_column="price",
                                    max_digits=18, decimal_places=2, blank=True, null=True)
+    status = models.BooleanField(default=True)
 
     class Meta:
         managed = True
@@ -198,7 +199,8 @@ class ServiceItem(models.Model):
                                    blank=True, null=True)
     price_asked = models.DecimalField(db_column="price",
                                    max_digits=18, decimal_places=2, blank=True, null=True)
-
+    status = models.BooleanField(default=True)
+    
     class Meta:
         managed = True
         db_table = 'tblProductContainedPackage'

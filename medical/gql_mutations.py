@@ -120,6 +120,38 @@ def update_or_create_item_or_service(data, user, item_service_model):
 
     if item_service_uuid:
         item_service = item_service_model.objects.get(uuid=item_service_uuid)
+        # Delete Service present in the Database and absent in the list sent by FE
+        # Means that user click on delete button and old Service is not sent
+        serviceExisting = list()
+        serviceSent = list()
+        for ServiceList in ServiceService.objects.filter(servicelinkedService=item_service.id).all() :
+            serviceExisting.append(ServiceList.id)
+
+        for ServiceList in services:
+            serviceSent.append(ServiceList.id)
+
+        serviceToDelete = list(set(serviceExisting) - set(serviceSent))
+        for serviceToDeleteId in serviceToDelete:
+            ServiceService.objects.filter(
+                id=serviceToDeleteId,
+            ).delete()
+
+        # Delete Item present in the Database and absent in the list sent by FE
+        # Means that user click on delete button and old Ites is not sent
+        itemExisting = list()
+        itemSent = list()
+        for ItemList in ServiceItem.objects.filter(servicelinkedItem=item_service.id).all() :
+            itemExisting.append(ItemList.id)
+
+        for ItemList in items:
+            itemSent.append(ItemList.id)
+
+        itemToDelete = list(set(itemExisting) - set(itemSent))
+        for itemToDeleteId in itemToDelete:
+            ServiceItem.objects.filter(
+                id=itemToDeleteId,
+            ).delete()
+
         reset_item_or_service_before_update(item_service)
         [setattr(item_service, key, data[key]) for key in data]
     else:

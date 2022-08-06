@@ -25,15 +25,6 @@ class ServiceGQLType(DjangoObjectType):
         }
         connection_class = ExtendedConnection
 
-    def resolve_attachments_count(self, info):
-        return self.attachments.filter(validity_to__isnull=True).count()
-
-    def resolve_items(self, info):
-        return self.items.filter(validity_to__isnull=True)
-
-    def resolve_services(self, info):
-        return self.services.filter(validity_to__isnull=True)
-
     @classmethod
     def get_queryset(cls, queryset, info):
         service_ids = Service.get_queryset(queryset, info).values('uuid').all()
