@@ -260,7 +260,7 @@ class DeleteServiceMutation(OpenIMISMutation):
 
 
 class ItemInputType(ItemOrServiceInputType):
-    package = graphene.String(required=True)
+    package = graphene.String()
     quantity = graphene.Decimal()
 
 class CreateItemMutation(CreateOrUpdateItemOrServiceMutation):
