@@ -151,9 +151,9 @@ def update_or_create_item_or_service(data, user, item_service_model):
             ServiceItem.objects.filter(
                 id=itemToDeleteId,
             ).delete()
-
         reset_item_or_service_before_update(item_service)
-        [setattr(item_service, key, data[key]) for key in data]
+        for key in data:
+            setattr(item_service, key, data[key])
     else:
         item_service = item_service_model.objects.create(**data)
     
@@ -161,8 +161,13 @@ def update_or_create_item_or_service(data, user, item_service_model):
     item_service_sub += process_items_relations(user, item_service, items)
     service_service_sub = 0
     service_service_sub += process_services_relations(user, item_service, services)
-    
+   
+    print(" -- Item service Price")
+    print(item_service)
+    print(item_service.price)
     item_service.save()
+    print(item_service.price)
+    
     if client_mutation_id:
         if isinstance(item_service, Service):
             ServiceMutation.object_mutated(user, client_mutation_id=client_mutation_id, service=item_service)
@@ -190,6 +195,8 @@ class CreateOrUpdateItemOrServiceMutation(OpenIMISMutation):
         data['audit_user_id'] = user.id_for_audit
         from core.utils import TimeUtils
         data['validity_from'] = TimeUtils.now()
+        print("Create or Update Item or Service Mutation");
+        print(data);
         update_or_create_item_or_service(data, user, cls.item_service_model)
         return None
 
