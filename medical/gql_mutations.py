@@ -6,6 +6,7 @@ import graphene
 from core import assert_string_length, PATIENT_CATEGORY_MASK_ADULT, PATIENT_CATEGORY_MASK_MALE, \
     PATIENT_CATEGORY_MASK_MINOR, PATIENT_CATEGORY_MASK_FEMALE
 from core.schema import OpenIMISMutation
+from medical.exceptions import CodeAlreadyExistsError
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError, PermissionDenied
 from medical.apps import MedicalConfig
@@ -125,6 +126,8 @@ def update_or_create_item_or_service(data, user, item_service_model):
         reset_item_or_service_before_update(item_service)
         [setattr(item_service, key, data[key]) for key in data]
     else:
+        if item_service_model.objects.all().filter(code=data['code'], validity_to__isnull=True).exists():
+            raise CodeAlreadyExistsError(_("Code already exists."))
         item_service = item_service_model.objects.create(**data)
     item_service.save()
     if client_mutation_id:
