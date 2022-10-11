@@ -1,0 +1,2 @@
+class CodeAlreadyExistsError(Exception):
+    pass
