@@ -43,7 +43,15 @@ class Diagnosis(core_models.VersionedModel):
         db_table = 'tblICDCodes'
 
 
-class Item(VersionedModel):
+class ItemOrService:
+    CARE_TYPE_OUT_PATIENT = "O"
+    CARE_TYPE_IN_PATIENT = "I"
+    CARE_TYPE_BOTH = "B"
+
+    CARE_TYPE_VALUES = [CARE_TYPE_BOTH, CARE_TYPE_IN_PATIENT, CARE_TYPE_OUT_PATIENT]
+
+
+class Item(VersionedModel, ItemOrService):
     id = models.AutoField(db_column='ItemID', primary_key=True)
     uuid = models.CharField(db_column='ItemUUID', max_length=36, default=uuid.uuid4, unique=True)
     code = models.CharField(db_column='ItemCode', max_length=6)
@@ -89,9 +97,10 @@ class Item(VersionedModel):
 
     TYPE_DRUG = "D"
     TYPE_MEDICAL_CONSUMABLE = "M"
+    TYPE_VALUES = [TYPE_DRUG, TYPE_MEDICAL_CONSUMABLE]
 
 
-class Service(VersionedModel):
+class Service(VersionedModel, ItemOrService):
     id = models.AutoField(db_column='ServiceID', primary_key=True)
     uuid = models.CharField(db_column='ServiceUUID',
                             max_length=36, default=uuid.uuid4, unique=True)
@@ -144,10 +153,6 @@ class Service(VersionedModel):
 
     TYPE_PREVENTATIVE = "P"
     TYPE_CURATIVE = "C"
-
-    CARE_TYPE_OUT_PATIENT = "O"
-    CARE_TYPE_IN_PATIENT = "I"
-    CARE_TYPE_BOTH = "B"
 
     CATEGORY_SURGERY = "S"
     CATEGORY_DELIVERY = "D"
