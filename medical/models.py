@@ -3,10 +3,13 @@ import uuid
 from core.models import VersionedModel, ObjectMutation
 from django.db import models
 from core import models as core_models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from graphql import ResolveInfo
 from django.conf import settings
 import core
 from medical.apps import MedicalConfig
+from medical.services import set_item_or_service_deleted, clear_item_dict
 
 
 class Diagnosis(core_models.VersionedModel):
@@ -66,6 +69,9 @@ class Item(VersionedModel, ItemOrService):
     audit_user_id = models.IntegerField(db_column='AuditUserID')
     # row_id = models.BinaryField(db_column='RowID', blank=True, null=True)
 
+    def __bool__(self):
+        return self.code is not None and len(self.code) >= 1
+
     def __str__(self):
         return self.code + " " + self.name
 
@@ -91,6 +97,14 @@ class Item(VersionedModel, ItemOrService):
 
         return queryset
 
+    # This method might raise problems with bulk delete using query sets
+    # https://docs.djangoproject.com/en/3.2/topics/db/models/#overriding-predefined-model-methods
+    def delete(self, hard_delete=False, *args, **kwargs):
+        if hard_delete:
+            super(Item, self).delete(args, kwargs)
+        else:
+            set_item_or_service_deleted(self, "item")
+
     class Meta:
         managed = False
         db_table = 'tblItems'
@@ -98,6 +112,24 @@ class Item(VersionedModel, ItemOrService):
     TYPE_DRUG = "D"
     TYPE_MEDICAL_CONSUMABLE = "M"
     TYPE_VALUES = [TYPE_DRUG, TYPE_MEDICAL_CONSUMABLE]
+
+
+@receiver(pre_save, sender=Item)
+def save_history_on_update(sender, instance, **kwargs):
+    try:
+        old_instance = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        # The object is being created for the first time, so no history save is needed
+        return
+    # Compare the old and new instances to see if any fields have changed
+    old_dict = clear_item_dict(old_instance)
+    new_dict = clear_item_dict(instance)
+    if not old_dict == new_dict:
+        # One or more fields have changed, so save history
+        old_instance.save_history()
+        from core import datetime
+        now = datetime.datetime.now()
+        instance.validity_from = now
 
 
 class Service(VersionedModel, ItemOrService):
