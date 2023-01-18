@@ -125,11 +125,11 @@ def update_or_create_item_or_service(data, user, item_service_model):
         item_service = item_service_model.objects.get(uuid=item_service_uuid)
         reset_item_or_service_before_update(item_service)
         [setattr(item_service, key, data[key]) for key in data]
+        item_service.save()
     else:
         if item_service_model.objects.all().filter(code=data['code'], validity_to__isnull=True).exists():
             raise CodeAlreadyExistsError(_("Code already exists."))
         item_service = item_service_model.objects.create(**data)
-    item_service.save()
     if client_mutation_id:
         if isinstance(item_service, Service):
             ServiceMutation.object_mutated(user, client_mutation_id=client_mutation_id, service=item_service)
