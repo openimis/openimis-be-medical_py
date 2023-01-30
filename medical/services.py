@@ -20,18 +20,3 @@ def set_item_or_service_deleted(item_service, item_or_service_element):
                            % {'uuid': item_service.uuid},
                 'detail': item_service.uuid}]
         }
-
-
-def clear_item_dict(item):
-    new_dict = {
-        "code": item.code,
-        "name": item.name,
-        "type": item.type,
-        "price": item.price,
-        "care_type": item.care_type,
-        "patient_category": item.patient_category,
-        "package": item.package,
-        "quantity": item.quantity,
-        "frequency": item.frequency,
-    }
-    return new_dict

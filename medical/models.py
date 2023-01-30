@@ -9,7 +9,7 @@ from graphql import ResolveInfo
 from django.conf import settings
 import core
 from medical.apps import MedicalConfig
-from medical.services import set_item_or_service_deleted, clear_item_dict
+from medical.services import set_item_or_service_deleted
 
 
 class Diagnosis(core_models.VersionedModel):
@@ -72,6 +72,26 @@ class Item(VersionedModel, ItemOrService):
     def __bool__(self):
         return self.code is not None and len(self.code) >= 1
 
+    def __eq__(self, other):
+        equals = isinstance(other, Item) and \
+                 self.code == other.code and \
+                 self.name == other.name and \
+                 self.type == other.type and \
+                 self.price == other.price and \
+                 self.care_type == other.care_type and \
+                 self.patient_category == other.patient_category and \
+                 self.quantity == other.quantity and \
+                 self.frequency == other.frequency
+
+        if equals:
+            if bool(self.package) == bool(other.package):
+                if self.package:
+                    return self.package == other.package
+                else:
+                    return True
+
+        return False
+
     def __str__(self):
         return self.code + " " + self.name
 
@@ -122,9 +142,7 @@ def save_history_on_update(sender, instance, **kwargs):
         # The object is being created for the first time, so no history save is needed
         return
     # Compare the old and new instances to see if any fields have changed
-    old_dict = clear_item_dict(old_instance)
-    new_dict = clear_item_dict(instance)
-    if not old_dict == new_dict:
+    if instance != old_instance:
         # One or more fields have changed, so save history
         old_instance.save_history()
         from core import datetime
@@ -149,12 +167,42 @@ class Service(VersionedModel, ItemOrService):
 
     # validity_from = fields.DateTimeField(db_column='ValidityFrom', blank=True, null=True)
     # validity_to = fields.DateTimeField(db_column='ValidityTo', blank=True, null=True)
-    #
     audit_user_id = models.IntegerField(db_column='AuditUserID', blank=True, null=True)
     # row_id = models.BinaryField(db_column='RowID', blank=True, null=True)
 
+    def __bool__(self):
+        return self.code is not None and len(self.code) >= 1
+
     def __str__(self):
         return self.code + " " + self.name
+
+    def __eq__(self, other):
+        equals = isinstance(other, Service) and \
+                 self.code == other.code and \
+                 self.name == other.name and \
+                 self.type == other.type and \
+                 self.level == other.level and \
+                 self.price == other.price and \
+                 self.care_type == other.care_type and \
+                 self.patient_category == other.patient_category and \
+                 self.frequency == other.frequency
+
+        if equals:
+            if bool(self.category) == bool(other.category):
+                if self.category:
+                    return self.category == other.category
+                else:
+                    return True
+
+        return False
+
+    # This method might raise problems with bulk delete using query sets
+    # https://docs.djangoproject.com/en/3.2/topics/db/models/#overriding-predefined-model-methods
+    def delete(self, hard_delete=False, *args, **kwargs):
+        if hard_delete:
+            super(Service, self).delete(args, kwargs)
+        else:
+            set_item_or_service_deleted(self, "service")
 
     @classmethod
     def filter_queryset(cls, queryset=None):
@@ -202,6 +250,22 @@ class Service(VersionedModel, ItemOrService):
     LEVEL_DAY_HOSPITAL = "D"
     LEVEL_HOSPITAL_CARE = "H"
     LEVEL_VALUES = [LEVEL_SIMPLE_SERVICE, LEVEL_VISIT, LEVEL_DAY_HOSPITAL, LEVEL_HOSPITAL_CARE]
+
+
+@receiver(pre_save, sender=Service)
+def save_history_on_update(sender, instance, **kwargs):
+    try:
+        old_instance = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        # The object is being created for the first time, so no history save is needed
+        return
+    # Compare the old and new instances to see if any fields have changed
+    if instance != old_instance:
+        # One or more fields have changed, so save history
+        old_instance.save_history()
+        from core import datetime
+        now = datetime.datetime.now()
+        instance.validity_from = now
 
 
 class ItemMutation(core_models.UUIDModel, ObjectMutation):
