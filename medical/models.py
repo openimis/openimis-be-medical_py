@@ -84,6 +84,7 @@ class Item(VersionedModel, ItemOrService):
                  self.frequency == other.frequency
 
         if equals:
+            # optional string field -> making sure that None and empty string are treated as the same to avoid saving history
             if bool(self.package) == bool(other.package):
                 if self.package:
                     return self.package == other.package
@@ -188,6 +189,7 @@ class Service(VersionedModel, ItemOrService):
                  self.frequency == other.frequency
 
         if equals:
+            # optional string field -> making sure that None and empty string are treated as the same to avoid saving history
             if bool(self.category) == bool(other.category):
                 if self.category:
                     return self.category == other.category
