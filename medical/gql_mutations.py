@@ -122,8 +122,14 @@ def update_or_create_item_or_service(data, user, item_service_model):
     # update_or_create(uuid=service_uuid, ...)
     # doesn't work because of explicit attempt to set null to uuid!
     data["audit_user_id"] = user.id_for_audit
-    item_service = item_service_model.objects.get(uuid=item_service_uuid)
-    if data['code'] != item_service.code:
+    try:
+        item_service = item_service_model.objects.get(uuid=item_service_uuid)
+        current_code = item_service.code
+    except item_service_model.DoesNotExist:
+        item_service = None
+        current_code = None
+    incoming_code = data['code']
+    if incoming_code != current_code:
         if item_service_uuid:
             if not check_if_code_already_exists(data, item_service_model):
                 reset_item_or_service_before_update(item_service)
