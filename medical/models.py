@@ -201,11 +201,14 @@ class Service(VersionedModel, ItemOrService):
 
         return False
 
+    def __hash__(self):
+        return hash((self.code, self.id, self.name, self.type, self.price, self.care_type, self.patient_category))
+
     # This method might raise problems with bulk delete using query sets
     # https://docs.djangoproject.com/en/3.2/topics/db/models/#overriding-predefined-model-methods
     def delete(self, hard_delete=False, *args, **kwargs):
         if hard_delete:
-            super(Service, self).delete(args, kwargs)
+            super(Service, self).delete(*args, **kwargs)
         else:
             set_item_or_service_deleted(self, "service")
 
