@@ -198,10 +198,14 @@ class Query(graphene.ObjectType):
         return gql_optimizer.query(queryset, info)
 
     def resolve_validate_service_code(self, info, **kwargs):
+        if not info.context.user.has_perms(MedicalConfig.gql_query_medical_services_perms):
+            raise PermissionDenied(_("unauthorized"))
         errors = check_unique_code_service(code=kwargs['service_code'])
         return False if errors else True
 
     def resolve_validate_item_code(self, info, **kwargs):
+        if not info.context.user.has_perms(MedicalConfig.gql_query_medical_items_perms):
+            raise PermissionDenied(_("unauthorized"))
         errors = check_unique_code_item(code=kwargs['item_code'])
         return False if errors else True
 
