@@ -5,10 +5,13 @@ from core.models import VersionedModel, ObjectMutation
 from django.db import models
 from django.utils import timezone as django_tz 
 from core import models as core_models
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from graphql import ResolveInfo
 from django.conf import settings
 import core
 from medical.apps import MedicalConfig
+from medical.services import set_item_or_service_deleted
 from medical import models as medical_models
 
 class Diagnosis(core_models.VersionedModel):
@@ -45,7 +48,15 @@ class Diagnosis(core_models.VersionedModel):
         db_table = 'tblICDCodes'
 
 
-class Item(VersionedModel):
+class ItemOrService:
+    CARE_TYPE_OUT_PATIENT = "O"
+    CARE_TYPE_IN_PATIENT = "I"
+    CARE_TYPE_BOTH = "B"
+
+    CARE_TYPE_VALUES = [CARE_TYPE_BOTH, CARE_TYPE_IN_PATIENT, CARE_TYPE_OUT_PATIENT]
+
+
+class Item(VersionedModel, ItemOrService):
     id = models.AutoField(db_column='ItemID', primary_key=True)
     uuid = models.CharField(db_column='ItemUUID', max_length=36, default=uuid.uuid4, unique=True)
     code = models.CharField(db_column='ItemCode', max_length=6)
@@ -60,8 +71,35 @@ class Item(VersionedModel):
     audit_user_id = models.IntegerField(db_column='AuditUserID')
     # row_id = models.BinaryField(db_column='RowID', blank=True, null=True)
 
+    def __bool__(self):
+        return self.code is not None and len(self.code) >= 1
+
+    def __eq__(self, other):
+        equals = isinstance(other, Item) and \
+                 self.code == other.code and \
+                 self.name == other.name and \
+                 self.type == other.type and \
+                 self.price == other.price and \
+                 self.care_type == other.care_type and \
+                 self.patient_category == other.patient_category and \
+                 self.quantity == other.quantity and \
+                 self.frequency == other.frequency
+
+        if equals:
+            # optional string field -> making sure that None and empty string are treated as the same to avoid saving history
+            if bool(self.package) == bool(other.package):
+                if self.package:
+                    return self.package == other.package
+                else:
+                    return True
+
+        return False
+
     def __str__(self):
         return self.code + " " + self.name
+
+    def __hash__(self):
+        return hash((self.code, self.id, self.name, self.type, self.price, self.care_type, self.patient_category))
 
     @classmethod
     def filter_queryset(cls, queryset=None):
@@ -85,15 +123,40 @@ class Item(VersionedModel):
 
         return queryset
 
+    # This method might raise problems with bulk delete using query sets
+    # https://docs.djangoproject.com/en/3.2/topics/db/models/#overriding-predefined-model-methods
+    def delete(self, hard_delete=False, *args, **kwargs):
+        if hard_delete:
+            super(Item, self).delete(*args, **kwargs)
+        else:
+            set_item_or_service_deleted(self, "item")
+
     class Meta:
         managed = False
         db_table = 'tblItems'
 
     TYPE_DRUG = "D"
     TYPE_MEDICAL_CONSUMABLE = "M"
+    TYPE_VALUES = [TYPE_DRUG, TYPE_MEDICAL_CONSUMABLE]
 
 
-class Service(VersionedModel):
+@receiver(pre_save, sender=Item)
+def save_history_on_update(sender, instance, **kwargs):
+    try:
+        old_instance = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        # The object is being created for the first time, so no history save is needed
+        return
+    # Compare the old and new instances to see if any fields have changed
+    if instance != old_instance:
+        # One or more fields have changed, so save history
+        old_instance.save_history()
+        from core import datetime
+        now = datetime.datetime.now()
+        instance.validity_from = now
+
+
+class Service(VersionedModel, ItemOrService):
     id = models.AutoField(db_column='ServiceID', primary_key=True)
     uuid = models.CharField(db_column='ServiceUUID',
                             max_length=36, default=uuid.uuid4, unique=True)
@@ -112,12 +175,46 @@ class Service(VersionedModel):
 
     # validity_from = fields.DateTimeField(db_column='ValidityFrom', blank=True, null=True)
     # validity_to = fields.DateTimeField(db_column='ValidityTo', blank=True, null=True)
-    #
     audit_user_id = models.IntegerField(db_column='AuditUserID', blank=True, null=True)
     # row_id = models.BinaryField(db_column='RowID', blank=True, null=True)
 
+    def __bool__(self):
+        return self.code is not None and len(self.code) >= 1
+
     def __str__(self):
         return self.code + " " + self.name
+
+    def __eq__(self, other):
+        equals = isinstance(other, Service) and \
+                 self.code == other.code and \
+                 self.name == other.name and \
+                 self.type == other.type and \
+                 self.level == other.level and \
+                 self.price == other.price and \
+                 self.care_type == other.care_type and \
+                 self.patient_category == other.patient_category and \
+                 self.frequency == other.frequency
+
+        if equals:
+            # optional string field -> making sure that None and empty string are treated as the same to avoid saving history
+            if bool(self.category) == bool(other.category):
+                if self.category:
+                    return self.category == other.category
+                else:
+                    return True
+
+        return False
+
+    def __hash__(self):
+        return hash((self.code, self.id, self.name, self.type, self.price, self.care_type, self.patient_category))
+
+    # This method might raise problems with bulk delete using query sets
+    # https://docs.djangoproject.com/en/3.2/topics/db/models/#overriding-predefined-model-methods
+    def delete(self, hard_delete=False, *args, **kwargs):
+        if hard_delete:
+            super(Service, self).delete(*args, **kwargs)
+        else:
+            set_item_or_service_deleted(self, "service")
 
     @classmethod
     def filter_queryset(cls, queryset=None):
@@ -148,10 +245,7 @@ class Service(VersionedModel):
 
     TYPE_PREVENTATIVE = "P"
     TYPE_CURATIVE = "C"
-
-    CARE_TYPE_OUT_PATIENT = "O"
-    CARE_TYPE_IN_PATIENT = "I"
-    CARE_TYPE_BOTH = "B"
+    TYPE_VALUES = [TYPE_PREVENTATIVE, TYPE_CURATIVE]
 
     CATEGORY_SURGERY = "S"
     CATEGORY_DELIVERY = "D"
@@ -160,11 +254,30 @@ class Service(VersionedModel):
     CATEGORY_CONSULTATION = "C"
     CATEGORY_OTHER = "O"
     CATEGORY_VISIT = "V"
+    CATEGORY_VALUES = [CATEGORY_SURGERY, CATEGORY_DELIVERY, CATEGORY_ANTENATAL,
+                       CATEGORY_HOSPITALIZATION, CATEGORY_CONSULTATION, CATEGORY_OTHER, CATEGORY_VISIT]
 
     LEVEL_SIMPLE_SERVICE = "S"
     LEVEL_VISIT = "V"
     LEVEL_DAY_HOSPITAL = "D"
     LEVEL_HOSPITAL_CARE = "H"
+    LEVEL_VALUES = [LEVEL_SIMPLE_SERVICE, LEVEL_VISIT, LEVEL_DAY_HOSPITAL, LEVEL_HOSPITAL_CARE]
+
+
+@receiver(pre_save, sender=Service)
+def save_history_on_update(sender, instance, **kwargs):
+    try:
+        old_instance = sender.objects.get(pk=instance.pk)
+    except sender.DoesNotExist:
+        # The object is being created for the first time, so no history save is needed
+        return
+    # Compare the old and new instances to see if any fields have changed
+    if instance != old_instance:
+        # One or more fields have changed, so save history
+        old_instance.save_history()
+        from core import datetime
+        now = datetime.datetime.now()
+        instance.validity_from = now
 
 
 class ServiceService(models.Model):

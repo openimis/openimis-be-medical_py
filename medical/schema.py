@@ -14,6 +14,7 @@ from .gql_queries import *
 from .apps import MedicalConfig
 from .models import Diagnosis, Item, Service
 import graphene_django_optimizer as gql_optimizer
+from .services import check_unique_code_item, check_unique_code_service
 
 
 class DiagnosisGQLType(DjangoObjectType):
@@ -76,6 +77,16 @@ class Query(graphene.ObjectType):
         date=graphene.Date(),
         orderBy=graphene.List(of_type=graphene.String),
         pricelist_uuid=graphene.UUID(),
+    )
+    validate_item_code = graphene.Field(
+        graphene.Boolean,
+        item_code=graphene.String(required=True),
+        description="Checks that the specified item code is unique."
+    )
+    validate_service_code = graphene.Field(
+        graphene.Boolean,
+        service_code=graphene.String(required=True),
+        description="Checks that the specified service code is unique."
     )
 
     def resolve_diagnoses_str(self, info, **kwargs):
@@ -171,6 +182,18 @@ class Query(graphene.ObjectType):
         if not show_history:
             queryset = queryset.filter(*filter_validity(**kwargs))
         return gql_optimizer.query(queryset, info)
+
+    def resolve_validate_service_code(self, info, **kwargs):
+        if not info.context.user.has_perms(MedicalConfig.gql_query_medical_services_perms):
+            raise PermissionDenied(_("unauthorized"))
+        errors = check_unique_code_service(code=kwargs['service_code'])
+        return False if errors else True
+
+    def resolve_validate_item_code(self, info, **kwargs):
+        if not info.context.user.has_perms(MedicalConfig.gql_query_medical_items_perms):
+            raise PermissionDenied(_("unauthorized"))
+        errors = check_unique_code_item(code=kwargs['item_code'])
+        return False if errors else True
 
 
 class Mutation(graphene.ObjectType):
