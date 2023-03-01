@@ -50,9 +50,4 @@ class Migration(migrations.Migration):
             name='manualPrice',
             field=models.BooleanField(default=False),
         ),
-        migrations.AddField(
-            model_name='service',
-            name='packagetype',
-            field=models.CharField(db_column='ServPackageType', default='S', max_length=1),
-        ),
     ]
