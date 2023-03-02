@@ -106,6 +106,7 @@ def reset_item_or_service_before_update(item_service):
         "level",    # service only
         "category", # service only
         "package",  # item only
+        "quantity", # item only
     ]
     for field in fields:
         if hasattr(item_service, field):
@@ -224,6 +225,7 @@ class DeleteServiceMutation(OpenIMISMutation):
 
 class ItemInputType(ItemOrServiceInputType):
     package = graphene.String(required=True)
+    quantity = graphene.Decimal()
 
 
 class CreateItemMutation(CreateOrUpdateItemOrServiceMutation):
