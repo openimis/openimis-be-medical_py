@@ -9,6 +9,7 @@ from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 from medical.gql_mutations import CreateServiceMutation, UpdateServiceMutation, DeleteServiceMutation, \
     CreateItemMutation, UpdateItemMutation, DeleteItemMutation
+from .gql_queries import *
 
 from .apps import MedicalConfig
 from .models import Diagnosis, Item, Service
@@ -37,21 +38,6 @@ class ItemGQLType(DjangoObjectType):
             'name': ['exact', 'icontains', 'istartswith'],
             'package': ['exact', 'icontains', 'istartswith'],
             'type': ['exact'],
-        }
-        connection_class = ExtendedConnection
-
-
-class ServiceGQLType(DjangoObjectType):
-    class Meta:
-        model = Service
-        interfaces = (graphene.relay.Node,)
-        filter_fields = {
-            'uuid': ['exact'],
-            'code': ['exact', 'icontains', 'istartswith'],
-            'name': ['exact', 'icontains', 'istartswith'],
-            'type': ['exact'],
-            'care_type': ['exact'],
-            'category': ['exact'],
         }
         connection_class = ExtendedConnection
 

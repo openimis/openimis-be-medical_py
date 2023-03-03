@@ -1,13 +1,15 @@
+import string
 import uuid
 
 from core.models import VersionedModel, ObjectMutation
 from django.db import models
+from django.utils import timezone as django_tz 
 from core import models as core_models
 from graphql import ResolveInfo
 from django.conf import settings
 import core
 from medical.apps import MedicalConfig
-
+from medical import models as medical_models
 
 class Diagnosis(core_models.VersionedModel):
     id = models.AutoField(db_column='ICDID', primary_key=True)
@@ -100,11 +102,13 @@ class Service(VersionedModel):
     code = models.CharField(db_column='ServCode', max_length=6)
     name = models.CharField(db_column='ServName', max_length=100)
     type = models.CharField(db_column='ServType', max_length=1)
+    packagetype = models.CharField(db_column='ServPackageType', max_length=1, default="S")
+    manualPrice = models.BooleanField(default=False)
     level = models.CharField(db_column='ServLevel', max_length=1)
     price = models.DecimalField(db_column='ServPrice', max_digits=18, decimal_places=2)
     care_type = models.CharField(db_column='ServCareType', max_length=1)
     frequency = models.SmallIntegerField(db_column='ServFrequency', blank=True, null=True)
-    patient_category = models.SmallIntegerField(db_column='ServPatCat')
+    patient_category = models.SmallIntegerField(db_column='ServPatCat', default="15")
 
     # validity_from = fields.DateTimeField(db_column='ValidityFrom', blank=True, null=True)
     # validity_to = fields.DateTimeField(db_column='ValidityTo', blank=True, null=True)
@@ -139,7 +143,7 @@ class Service(VersionedModel):
         return queryset
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tblServices'
 
     TYPE_PREVENTATIVE = "P"
@@ -163,7 +167,47 @@ class Service(VersionedModel):
     LEVEL_HOSPITAL_CARE = "H"
 
 
-class ItemMutation(core_models.UUIDModel, ObjectMutation):
+class ServiceService(models.Model):
+    """class representing relation between package and services """
+    id = models.AutoField(primary_key=True, db_column='idSCP')
+    service = models.ForeignKey(Service, models.DO_NOTHING,
+                              db_column='ServiceId', related_name='servicesServices')
+    servicelinkedService = models.ForeignKey( Service,
+                                          models.DO_NOTHING, db_column="ServiceLinked")
+    qty_provided = models.IntegerField(db_column="qty",
+                                      blank=True, null=True)
+    scpDate = models.DateTimeField(db_column="created_date", default=django_tz.now,
+                                   blank=True, null=True)
+    price_asked = models.DecimalField(db_column="price",
+                                   max_digits=18, decimal_places=2, blank=True, null=True)
+    status = models.BooleanField(default=True)
+
+    class Meta:
+        managed = True
+        db_table = 'tblServiceContainedPackage'
+
+
+class ServiceItem(models.Model):
+    """class representing relation between package and product """
+    id = models.AutoField(primary_key=True, db_column='idPCP')
+    item = models.ForeignKey(Item, models.DO_NOTHING, db_column='ItemID', related_name="itemsServices")                           
+    servicelinkedItem = models.ForeignKey( Service,
+                                          models.DO_NOTHING, db_column="ServiceID",related_name='servicesLinked')
+    qty_provided = models.IntegerField(db_column="qty",
+                                      blank=True, null=True)
+    pcpDate = models.DateTimeField(db_column="created_date", default=django_tz.now,
+                                   blank=True, null=True)
+    price_asked = models.DecimalField(db_column="price",
+                                   max_digits=18, decimal_places=2, blank=True, null=True)
+    status = models.BooleanField(default=True)
+    
+    class Meta:
+        managed = True
+        db_table = 'tblProductContainedPackage'
+
+
+
+class ItemMutation(core_models.UUIDModel, core_models.ObjectMutation):
     item = models.ForeignKey(Item, models.DO_NOTHING, related_name='mutations')
     mutation = models.ForeignKey(core_models.MutationLog, models.DO_NOTHING, related_name='items')
 
@@ -172,7 +216,7 @@ class ItemMutation(core_models.UUIDModel, ObjectMutation):
         db_table = "medical_ItemMutation"
 
 
-class ServiceMutation(core_models.UUIDModel, ObjectMutation):
+class ServiceMutation(core_models.UUIDModel, core_models.ObjectMutation):
     service = models.ForeignKey(Service, models.DO_NOTHING, related_name='mutations')
     mutation = models.ForeignKey(core_models.MutationLog, models.DO_NOTHING, related_name='services')
 
