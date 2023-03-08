@@ -5,9 +5,10 @@ from operator import or_
 import django.db.models.base
 import graphene
 from graphene import InputObjectType
+
 from core import assert_string_length, PATIENT_CATEGORY_MASK_ADULT, PATIENT_CATEGORY_MASK_MALE, \
     PATIENT_CATEGORY_MASK_MINOR, PATIENT_CATEGORY_MASK_FEMALE
-from core.schema import OpenIMISMutation
+from core.schema import TinyInt, OpenIMISMutation
 from medical.exceptions import CodeAlreadyExistsError
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError, PermissionDenied
