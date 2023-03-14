@@ -122,22 +122,20 @@ def update_or_create_item_or_service(data, user, item_service_model):
     # update_or_create(uuid=service_uuid, ...)
     # doesn't work because of explicit attempt to set null to uuid!
     data["audit_user_id"] = user.id_for_audit
-    try:
-        item_service = item_service_model.objects.get(uuid=item_service_uuid)
-        current_code = item_service.code
-    except item_service_model.DoesNotExist:
-        item_service = None
-        current_code = None
-    incoming_code = data['code']
-    if incoming_code != current_code:
-        if item_service_uuid:
-            if not check_if_code_already_exists(data, item_service_model):
-                reset_item_or_service_before_update(item_service)
-                [setattr(item_service, key, data[key]) for key in data]
-                item_service.save()
-        else:
-            check_if_code_already_exists(data, item_service_model)
-            item_service = item_service_model.objects.create(**data)
+
+    incoming_code = data.get('code')
+    item_service = item_service_model.objects.filter(uuid=item_service_uuid).first()
+    current_code = item_service.code if item_service else None
+    if current_code != incoming_code:
+        check_if_code_already_exists(data, item_service_model)
+
+    if item_service_uuid:
+        reset_item_or_service_before_update(item_service)
+        [setattr(item_service, key, data[key]) for key in data]
+    else:
+        item_service = item_service_model.objects.create(**data)
+
+    item_service.save()
     if client_mutation_id:
         if isinstance(item_service, Service):
             ServiceMutation.object_mutated(user, client_mutation_id=client_mutation_id, service=item_service)
