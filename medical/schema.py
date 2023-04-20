@@ -122,7 +122,8 @@ class Query(graphene.ObjectType):
         search_str = kwargs.get("str")
         q = Item.objects.filter(*filter_validity(date))
         if pricelist_uuid is not None:
-            q = q.filter(pricelist_details__items_pricelist__uuid=pricelist_uuid)
+            q = q.filter(pricelist_details__items_pricelist__uuid=pricelist_uuid,
+                         pricelist_details__validity_to__isnull=True)
         if search_str is not None:
             q = q.filter(Q(code__icontains=search_str) | Q(name__icontains=search_str))
         return q
@@ -165,7 +166,8 @@ class Query(graphene.ObjectType):
         search_str = kwargs.get("str")
         q = Service.objects.filter(*filter_validity(date))
         if pricelist_uuid is not None:
-            q = q.filter(pricelist_details__services_pricelist__uuid=pricelist_uuid)
+            q = q.filter(pricelist_details__services_pricelist__uuid=pricelist_uuid,
+                         pricelist_details__validity_to__isnull=True)
         if search_str is not None:
             q = q.filter(Q(code__icontains=search_str) | Q(name__icontains=search_str))
         return q
