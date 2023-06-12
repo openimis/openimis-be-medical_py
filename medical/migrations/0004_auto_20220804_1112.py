@@ -19,11 +19,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ServiceService',
             fields=[
-                ('idSCP', models.AutoField(primary_key=True, serialize=False)),
-                ('scpQuantity', models.IntegerField(blank=True, db_column='qty', null=True)),
+                ('id', models.AutoField(db_column='idSCP', default=1, primary_key=True, serialize=False)),
+                ('qty_provided', models.IntegerField(blank=True, db_column='qty', null=True)),
                 ('scpDate', models.DateTimeField(blank=True, db_column='created_date', default=django.utils.timezone.now, null=True)),
-                ('scpPrice', models.DecimalField(blank=True, db_column='price', decimal_places=2, max_digits=18, null=True)),
+                ('price_asked', models.DecimalField(blank=True, db_column='price', decimal_places=2, max_digits=18, null=True)),
                 ('service', models.ForeignKey(db_column='ServiceId', on_delete=django.db.models.deletion.DO_NOTHING, related_name='servicesServices', to='medical.Service')),
+                ('servicelinkedService', models.ForeignKey(db_column='ServiceLinked', default=1, on_delete=django.db.models.deletion.DO_NOTHING, to='medical.Service')),
+                ('status', models.BooleanField(default=True)),
             ],
             options={
                 'db_table': 'tblServiceContainedPackage',
@@ -33,12 +35,13 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ServiceItem',
             fields=[
-                ('idPCP', models.AutoField(primary_key=True, serialize=False)),
+                ('id', models.AutoField(db_column='idPCP', default=1, primary_key=True, serialize=False)),
                 ('qty_provided', models.IntegerField(blank=True, db_column='qty', null=True)),
                 ('pcpDate', models.DateTimeField(blank=True, db_column='created_date', default=django.utils.timezone.now, null=True)),
                 ('price_asked', models.DecimalField(blank=True, db_column='price', decimal_places=2, max_digits=18, null=True)),
-                ('item_id', models.ForeignKey(db_column='ItemID', on_delete=django.db.models.deletion.DO_NOTHING, related_name='item', to='medical.Item')),
-                ('servicelinked', models.ForeignKey(db_column='ServiceID', on_delete=django.db.models.deletion.DO_NOTHING, related_name='servicesLinked', to='medical.Service')),
+                ('item', models.ForeignKey(db_column='ItemID', on_delete=django.db.models.deletion.DO_NOTHING, related_name='itemsServices', to='medical.Item')),
+                ('servicelinkedItem', models.ForeignKey(db_column='ServiceID', on_delete=django.db.models.deletion.DO_NOTHING, related_name='servicesLinked', to='medical.Service')),
+                ('status', models.BooleanField(default=True)),
             ],
             options={
                 'db_table': 'tblProductContainedPackage',
