@@ -9,7 +9,7 @@ import uuid
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('medical', '0008_auto_20220805_2108'),
+        ('medical', '0004_auto_20220804_1112'),
     ]
 
     operations = [
@@ -20,14 +20,6 @@ class Migration(migrations.Migration):
         migrations.RemoveField(
             model_name='service',
             name='row_id',
-        ),
-        migrations.RemoveField(
-            model_name='serviceitem',
-            name='idPCP',
-        ),
-        migrations.RemoveField(
-            model_name='serviceservice',
-            name='idSCP',
         ),
         migrations.AddField(
             model_name='service',
@@ -43,18 +35,6 @@ class Migration(migrations.Migration):
             model_name='service',
             name='uuid',
             field=models.CharField(db_column='ServiceUUID', default=uuid.uuid4, max_length=36, unique=True),
-        ),
-        migrations.AddField(
-            model_name='serviceitem',
-            name='id',
-            field=models.AutoField(db_column='idPCP', default=1, primary_key=True, serialize=False),
-            preserve_default=False,
-        ),
-        migrations.AddField(
-            model_name='serviceservice',
-            name='id',
-            field=models.AutoField(db_column='idSCP', default=1, primary_key=True, serialize=False),
-            preserve_default=False,
         ),
         migrations.AlterField(
             model_name='service',
