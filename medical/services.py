@@ -1,6 +1,5 @@
 from gettext import gettext as _
 
-
 def set_item_or_service_deleted(item_service, item_or_service_element):
     """
     Marks an Item or Service as deleted, cascading onto the pricelists
@@ -20,3 +19,32 @@ def set_item_or_service_deleted(item_service, item_or_service_element):
                            % {'uuid': item_service.uuid},
                 'detail': item_service.uuid}]
         }
+
+
+def clear_item_dict(item):
+    new_dict = {
+        "code": item.code,
+        "name": item.name,
+        "type": item.type,
+        "price": item.price,
+        "care_type": item.care_type,
+        "patient_category": item.patient_category,
+        "package": item.package,
+        "quantity": item.quantity,
+        "frequency": item.frequency,
+    }
+    return new_dict
+
+
+def check_unique_code_service(code):
+    from .models import Service
+    if Service.objects.filter(code=code, validity_to__isnull=True).exists():
+        return [{"message": "Services code %s already exists" % code}]
+    return []
+
+
+def check_unique_code_item(code):
+    from .models import Item
+    if Item.objects.filter(code=code, validity_to__isnull=True).exists():
+        return [{"message": "Items code %s already exists" % code}]
+    return []
