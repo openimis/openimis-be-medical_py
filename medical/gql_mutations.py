@@ -86,6 +86,7 @@ class ItemOrServiceInputType(OpenIMISMutation.Input):
     patient_categories = graphene.List(of_type=PatientCategoriesEnum, required=False)
     frequency = graphene.Decimal(required=False)
     price = graphene.Decimal(required=True)
+    maximum_amount = graphene.Decimal(required=False)
 
 
 class ServiceInputType(ItemOrServiceInputType):
