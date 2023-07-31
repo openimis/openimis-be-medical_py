@@ -8,7 +8,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('medical', '0003_mutations'),
+        ('medical', '0005_set_managed_to_true'),
     ]
 
     operations = [
