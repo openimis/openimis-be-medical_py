@@ -11,8 +11,9 @@ from graphql import ResolveInfo
 from django.conf import settings
 import core
 from medical.apps import MedicalConfig
-from medical.services import set_item_or_service_deleted
 from medical import models as medical_models
+from medical.services import set_item_or_service_deleted
+
 
 class Diagnosis(core_models.VersionedModel):
     id = models.AutoField(db_column='ICDID', primary_key=True)
@@ -44,7 +45,7 @@ class Diagnosis(core_models.VersionedModel):
         return queryset
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tblICDCodes'
 
 
@@ -132,7 +133,7 @@ class Item(VersionedModel, ItemOrService):
             set_item_or_service_deleted(self, "item")
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tblItems'
 
     TYPE_DRUG = "D"

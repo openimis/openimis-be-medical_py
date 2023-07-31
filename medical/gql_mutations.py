@@ -8,7 +8,7 @@ from graphene import InputObjectType
 
 from core import assert_string_length, PATIENT_CATEGORY_MASK_ADULT, PATIENT_CATEGORY_MASK_MALE, \
     PATIENT_CATEGORY_MASK_MINOR, PATIENT_CATEGORY_MASK_FEMALE
-from core.schema import TinyInt, OpenIMISMutation
+from core.schema import TinyInt, SmallInt, OpenIMISMutation
 from medical.exceptions import CodeAlreadyExistsError
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError, PermissionDenied
@@ -120,54 +120,50 @@ def update_or_create_item_or_service(data, user, item_service_model):
     # update_or_create(uuid=service_uuid, ...)
     # doesn't work because of explicit attempt to set null to uuid!
     data["audit_user_id"] = user.id_for_audit
-    try:
-        item_service = item_service_model.objects.get(uuid=item_service_uuid)
-        current_code = item_service.code
-    except item_service_model.DoesNotExist:
-        item_service = None
-        current_code = None
-    incoming_code = data['code']
-    if incoming_code != current_code:
-        if item_service_uuid:
-            if not check_if_code_already_exists(data, item_service_model):
-                item_service = item_service_model.objects.get(uuid=item_service_uuid)
-                # Delete Service present in the Database and absent in the list sent by FE
-                # Means that user click on delete button and old Service is not sent
-                serviceExisting = list()
-                serviceSent = list()
-                for ServiceList in ServiceService.objects.filter(servicelinkedService=item_service.id).all() :
-                    serviceExisting.append(ServiceList.id)
 
-                for ServiceList in services:
-                    serviceSent.append(ServiceList.id)
+    incoming_code = data.get('code')
+    item_service = item_service_model.objects.filter(uuid=item_service_uuid).first()
+    # Delete Service present in the Database and absent in the list sent by FE
+    # Means that user click on delete button and old Service is not sent
+    serviceExisting = list()
+    serviceSent = list()
+    for ServiceList in ServiceService.objects.filter(servicelinkedService=item_service.id).all() :
+        serviceExisting.append(ServiceList.id)
 
-                serviceToDelete = list(set(serviceExisting) - set(serviceSent))
-                for serviceToDeleteId in serviceToDelete:
-                    ServiceService.objects.filter(
-                        id=serviceToDeleteId,
-                    ).delete()
+    for ServiceList in services:
+        serviceSent.append(ServiceList.id)
 
-                # Delete Item present in the Database and absent in the list sent by FE
-                # Means that user click on delete button and old Ites is not sent
-                itemExisting = list()
-                itemSent = list()
-                for ItemList in ServiceItem.objects.filter(servicelinkedItem=item_service.id).all() :
-                    itemExisting.append(ItemList.id)
+    serviceToDelete = list(set(serviceExisting) - set(serviceSent))
+    for serviceToDeleteId in serviceToDelete:
+        ServiceService.objects.filter(
+            id=serviceToDeleteId,
+        ).delete()
 
-                for ItemList in items:
-                    itemSent.append(ItemList.id)
+    # Delete Item present in the Database and absent in the list sent by FE
+    # Means that user click on delete button and old Ites is not sent
+    itemExisting = list()
+    itemSent = list()
+    for ItemList in ServiceItem.objects.filter(servicelinkedItem=item_service.id).all() :
+        itemExisting.append(ItemList.id)
 
-                itemToDelete = list(set(itemExisting) - set(itemSent))
-                for itemToDeleteId in itemToDelete:
-                    ServiceItem.objects.filter(
-                        id=itemToDeleteId,
-                    ).delete()
-                reset_item_or_service_before_update(item_service)
-                [setattr(item_service, key, data[key]) for key in data]
-                item_service.save()
-        else:
-            check_if_code_already_exists(data, item_service_model)
-            item_service = item_service_model.objects.create(**data)
+    for ItemList in items:
+        itemSent.append(ItemList.id)
+
+    itemToDelete = list(set(itemExisting) - set(itemSent))
+    for itemToDeleteId in itemToDelete:
+        ServiceItem.objects.filter(
+            id=itemToDeleteId,
+        ).delete()
+    current_code = item_service.code if item_service else None
+    if current_code != incoming_code:
+        check_if_code_already_exists(data, item_service_model)
+
+    if item_service_uuid:
+        reset_item_or_service_before_update(item_service)
+        for key in data:
+            setattr(item_service, key, data[key])
+    else:
+        item_service = item_service_model.objects.create(**data)
     
     item_service_sub = 0
     item_service_sub += process_items_relations(user, item_service, items)
