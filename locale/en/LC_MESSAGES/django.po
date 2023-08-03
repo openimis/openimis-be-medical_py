@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-05 10:48+0200\n"
+"POT-Creation-Date: 2022-09-30 12:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,6 +19,50 @@ msgstr ""
 
 #: build/lib/medical/schema.py:72 build/lib/medical/schema.py:83
 #: build/lib/medical/schema.py:95 medical/schema.py:72 medical/schema.py:83
-#: medical/schema.py:95
+#: medical/schema.py:95 medical/gql_mutations.py:147
+#: medical/gql_mutations.py:210 medical/gql_mutations.py:280
+#: medical/schema.py:97 medical/schema.py:110 medical/schema.py:131
+#: medical/schema.py:153 medical/schema.py:173
 msgid "unauthorized"
 msgstr "User not authorized for this operation"
+
+#: medical/gql_mutations.py:130
+msgid "Code already exists."
+msgstr ""
+
+#: medical/gql_mutations.py:145
+msgid "mutation.authentication_required"
+msgstr ""
+
+#: medical/gql_mutations.py:155
+msgid "medical.mutation.patient_category_missing"
+msgstr ""
+
+#: medical/gql_mutations.py:178
+msgid "service.mutation.failed_to_create_service"
+msgstr ""
+
+#: medical/gql_mutations.py:196
+msgid "service.mutation.failed_to_update_service"
+msgstr ""
+
+#: medical/gql_mutations.py:220
+msgid "service.validation.id_does_not_exist"
+msgstr ""
+
+#: medical/gql_mutations.py:248
+msgid "item.mutation.failed_to_create_item"
+msgstr ""
+
+#: medical/gql_mutations.py:266
+msgid "item.mutation.failed_to_update_item"
+msgstr ""
+
+#: medical/gql_mutations.py:290
+msgid "item.validation.id_does_not_exist"
+msgstr ""
+
+#: medical/services.py:19
+#, python-brace-format
+msgid "medical.mutation.failed_to_delete_{item_or_service_element}"
+msgstr ""

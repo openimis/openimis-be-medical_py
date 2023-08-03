@@ -2,11 +2,13 @@ import functools
 from gettext import gettext as _
 from operator import or_
 
+import django.db.models.base
 import graphene
 from graphene import InputObjectType
 from core import assert_string_length, PATIENT_CATEGORY_MASK_ADULT, PATIENT_CATEGORY_MASK_MALE, \
     PATIENT_CATEGORY_MASK_MINOR, PATIENT_CATEGORY_MASK_FEMALE
-from core.schema import TinyInt, SmallInt, OpenIMISMutation
+from core.schema import OpenIMISMutation, TinyInt
+from medical.exceptions import CodeAlreadyExistsError
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError, PermissionDenied
 from medical.apps import MedicalConfig
@@ -73,6 +75,7 @@ class ItemOrServiceInputType(OpenIMISMutation.Input):
     patient_categories = graphene.List(of_type=PatientCategoriesEnum, required=False)
     frequency = graphene.Decimal(required=False)
     price = graphene.Decimal(required=True)
+    maximum_amount = graphene.Decimal(required=False)
 
 
 class ServiceInputType(ItemOrServiceInputType):
@@ -117,6 +120,12 @@ def update_or_create_item_or_service(data, user, item_service_model):
     # update_or_create(uuid=service_uuid, ...)
     # doesn't work because of explicit attempt to set null to uuid!
     data["audit_user_id"] = user.id_for_audit
+
+    incoming_code = data.get('code')
+    item_service = item_service_model.objects.filter(uuid=item_service_uuid).first()
+    current_code = item_service.code if item_service else None
+    if current_code != incoming_code:
+        check_if_code_already_exists(data, item_service_model)
 
     if item_service_uuid:
         item_service = item_service_model.objects.get(uuid=item_service_uuid)
@@ -173,6 +182,14 @@ def update_or_create_item_or_service(data, user, item_service_model):
             ServiceMutation.object_mutated(user, client_mutation_id=client_mutation_id, service=item_service)
         elif isinstance(item_service, Item):
             ItemMutation.object_mutated(user, client_mutation_id=client_mutation_id, item=item_service)
+
+
+def check_if_code_already_exists(
+        data: dict,
+        item_service_model: django.db.models.base.ModelBase
+):
+    if item_service_model.objects.all().filter(code=data['code'], validity_to__isnull=True).exists():
+        raise CodeAlreadyExistsError(_("Code already exists."))
 
 
 class CreateOrUpdateItemOrServiceMutation(OpenIMISMutation):
