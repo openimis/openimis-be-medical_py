@@ -161,8 +161,7 @@ def update_or_create_item_or_service(data, user, item_service_model):
                 id=itemToDeleteId,
             ).delete()
         reset_item_or_service_before_update(item_service)
-        for key in data:
-            setattr(item_service, key, data[key])
+        [setattr(item_service, key, data[key]) for key in data]
     else:
         item_service = item_service_model.objects.create(**data)
     
