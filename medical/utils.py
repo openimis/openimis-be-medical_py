@@ -3,7 +3,6 @@ from medical.models import ServiceItem, ServiceService, Item, Service
 
 def process_child_relation(user, data_children, service_id, children, create_hook):
     claimed = 0
-    from core.utils import TimeUtils
     for data_elt in data_children:
         elt_id = data_elt.pop('id') if 'id' in data_elt else None
         if elt_id:
