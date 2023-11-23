@@ -54,14 +54,17 @@ class ItemOrService:
     CARE_TYPE_IN_PATIENT = "I"
     CARE_TYPE_BOTH = "B"
 
+    CODE_LENGTH = 6
+    NAME_LENGTH = 100
+
     CARE_TYPE_VALUES = [CARE_TYPE_BOTH, CARE_TYPE_IN_PATIENT, CARE_TYPE_OUT_PATIENT]
 
 
 class Item(VersionedModel, ItemOrService):
     id = models.AutoField(db_column='ItemID', primary_key=True)
     uuid = models.CharField(db_column='ItemUUID', max_length=36, default=uuid.uuid4, unique=True)
-    code = models.CharField(db_column='ItemCode', max_length=6)
-    name = models.CharField(db_column='ItemName', max_length=100)
+    code = models.CharField(db_column='ItemCode', max_length=ItemOrService.CODE_LENGTH)
+    name = models.CharField(db_column='ItemName', max_length=ItemOrService.NAME_LENGTH)
     type = models.CharField(db_column='ItemType', max_length=1)
     package = models.CharField(db_column='ItemPackage', max_length=255, blank=True, null=True)
     price = models.DecimalField(db_column='ItemPrice', max_digits=18, decimal_places=2)
@@ -163,8 +166,8 @@ class Service(VersionedModel, ItemOrService):
                             max_length=36, default=uuid.uuid4, unique=True)
     # legacy_id = models.IntegerField(db_column='LegacyID', blank=True, null=True)
     category = models.CharField(db_column='ServCategory', max_length=1, blank=True, null=True)
-    code = models.CharField(db_column='ServCode', max_length=6)
-    name = models.CharField(db_column='ServName', max_length=100)
+    code = models.CharField(db_column='ServCode', max_length=ItemOrService.CODE_LENGTH)
+    name = models.CharField(db_column='ServName', max_length=ItemOrService.NAME_LENGTH)
     type = models.CharField(db_column='ServType', max_length=1)
     level = models.CharField(db_column='ServLevel', max_length=1)
     price = models.DecimalField(db_column='ServPrice', max_digits=18, decimal_places=2)

@@ -11,14 +11,14 @@ from medical.exceptions import CodeAlreadyExistsError
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError, PermissionDenied
 from medical.apps import MedicalConfig
-from medical.models import Service, ServiceMutation, Item, ItemMutation
+from medical.models import Service, ServiceMutation, Item, ItemMutation, ItemOrService
 from medical.services import set_item_or_service_deleted
 
 
 class ServiceCodeInputType(graphene.String):
     @staticmethod
     def coerce_string(value):
-        assert_string_length(value, 6)
+        assert_string_length(value, ItemOrService.CODE_LENGTH)
         return value
 
     serialize = coerce_string
@@ -27,7 +27,7 @@ class ServiceCodeInputType(graphene.String):
     @staticmethod
     def parse_literal(ast):
         result = graphene.String.parse_literal(ast)
-        assert_string_length(result, 6)
+        assert_string_length(result, ItemOrService.CODE_LENGTH)
         return result
 
 # The following Enums would be more GraphQL friendly than the current String types but they are less configurable
