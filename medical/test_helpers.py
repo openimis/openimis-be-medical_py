@@ -12,6 +12,7 @@ def get_item_of_type(item_type, valid=True):
 def create_test_service(category, valid=True, custom_props={}):
     return Service.objects.create(
         **{
+            "maximum_amount":5000,
             "code": "TST-" + category,
             "category": category,
             "name": "Test service " + category,
@@ -31,6 +32,8 @@ def create_test_service(category, valid=True, custom_props={}):
 def create_test_item(item_type, valid=True, custom_props=None):
     return Item.objects.create(
         **{
+            "quantity":1,
+            "maximum_amount":225000,
             "code": "XXX",
             "type": item_type,
             "name": "Test item",

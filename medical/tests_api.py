@@ -37,20 +37,20 @@ class MedicalGQLTestCase(GraphQLTestCase):
         cls.noright_user = create_test_interactive_user(username="testMedicalNoRight", roles=[1])
         cls.noright_token = get_token(cls.noright_user, DummyContext(user=cls.noright_user))
         cls.test_item_hist = create_test_item(item_type="M", custom_props={
-            "quantity":1, "maximum_amount":225000, "name": "Test history API", "code": "TSTAP9"})
+            "name": "Test history API", "code": "TSTAP9"})
         cls.test_item_hist.save_history()
         cls.test_item = create_test_item(item_type="M", custom_props={
-            "quantity":1, "maximum_amount":225000, "name": "Test name API", "code": "TSTAP0", "package": "box of 12"})
+            "name": "Test name API", "code": "TSTAP0", "package": "box of 12"})
         cls.test_service = create_test_service(category="A", custom_props={
-            "maximum_amount":5000, "name": "Test svc API", "code": "SVCAP0", "level": "C"})
+            "name": "Test svc API", "code": "SVCAP0", "level": "C"})
         cls.test_item_update = create_test_item(item_type="M", custom_props={
-            "quantity":1, "maximum_amount":225000, "name": "Test update API", "code": "TSTAP4", "package": "box of 1"})
+            "name": "Test update API", "code": "TSTAP4", "package": "box of 1"})
         cls.test_service_update = create_test_service(category="A", custom_props={
-            "maximum_amount":5000, "name": "Test update API", "code": "SVCAP4", "level": "C"})
+            "name": "Test update API", "code": "SVCAP4", "level": "C"})
         cls.test_item_delete = create_test_item(item_type="M", custom_props={
-            "quantity":1, "maximum_amount":225000, "name": "Test update API", "code": "TSTAP5", "package": "box of 1"})
+            "name": "Test update API", "code": "TSTAP5", "package": "box of 1"})
         cls.test_service_delete = create_test_service(category="A", custom_props={
-            "maximum_amount":225000, "name": "Test update API", "code": "SVCAP5", "level": "C"})
+            "name": "Test update API", "code": "SVCAP5", "level": "C"})
 
     def _getItemFromAPI(self, code):
         response = self.query(
