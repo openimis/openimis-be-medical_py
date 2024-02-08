@@ -28,18 +28,12 @@ class MedicalConfig(AppConfig):
     gql_mutation_medical_services_update_perms = []
     gql_mutation_medical_services_delete_perms = []
 
-    def _configure_permissions(self, cfg):
-        MedicalConfig.gql_query_diagnosis_perms = cfg["gql_query_diagnosis_perms"]
-        MedicalConfig.gql_query_medical_items_perms = cfg["gql_query_medical_items_perms"]
-        MedicalConfig.gql_query_medical_services_perms = cfg["gql_query_medical_services_perms"]
-        MedicalConfig.gql_mutation_medical_items_add_perms = cfg["gql_mutation_medical_items_add_perms"]
-        MedicalConfig.gql_mutation_medical_items_update_perms = cfg["gql_mutation_medical_items_update_perms"]
-        MedicalConfig.gql_mutation_medical_items_delete_perms = cfg["gql_mutation_medical_items_delete_perms"]
-        MedicalConfig.gql_mutation_medical_services_add_perms = cfg["gql_mutation_medical_services_add_perms"]
-        MedicalConfig.gql_mutation_medical_services_update_perms = cfg["gql_mutation_medical_services_update_perms"]
-        MedicalConfig.gql_mutation_medical_services_delete_perms = cfg["gql_mutation_medical_services_delete_perms"]
+    def __load_config(self, cfg):
+        for field in cfg:
+            if hasattr(MedicalConfig, field):
+                setattr(MedicalConfig, field, cfg[field])
 
     def ready(self):
         from core.models import ModuleConfiguration
         cfg = ModuleConfiguration.get_or_default(MODULE_NAME, DEFAULT_CFG)
-        self._configure_permissions(cfg)
+        self.__load_config(cfg)
