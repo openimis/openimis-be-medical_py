@@ -80,7 +80,7 @@ class ItemOrServiceInputType(OpenIMISMutation.Input):
 
 class ServiceInputType(ItemOrServiceInputType):
     level = graphene.String(required=True)
-    packagetype = graphene.String(required=True)
+    packagetype = graphene.String(required=False)
     manualPrice = graphene.String(required=False)
     category = graphene.String(required=False)
     items = graphene.List(ServiceItemInputType, required=False)
