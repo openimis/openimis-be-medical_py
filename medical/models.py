@@ -156,8 +156,15 @@ def save_history_on_update(sender, instance, **kwargs):
         now = datetime.datetime.now()
         instance.validity_from = now
 
+class PackageTypes(models.TextChoices):
+    P = "P", "P"
+    S = "S", "S"
+    F = "F", "F"
 
 class Service(VersionedModel, ItemOrService):
+
+    DEFAULT_PATIENT_CATEGORY = 15
+
     id = models.AutoField(db_column='ServiceID', primary_key=True)
     uuid = models.CharField(db_column='ServiceUUID',
                             max_length=36, default=uuid.uuid4, unique=True)
@@ -166,14 +173,14 @@ class Service(VersionedModel, ItemOrService):
     code = models.CharField(db_column='ServCode', max_length=6)
     name = models.CharField(db_column='ServName', max_length=100)
     type = models.CharField(db_column='ServType', max_length=1)
-    packagetype = models.CharField(db_column='ServPackageType', max_length=1, default="S")
+    packagetype = models.CharField(db_column='ServPackageType', choices=PackageTypes.choices, max_length=1, default=PackageTypes.S)
     manualPrice = models.BooleanField(default=False)
     level = models.CharField(db_column='ServLevel', max_length=1)
     price = models.DecimalField(db_column='ServPrice', max_digits=18, decimal_places=2)
     maximum_amount = models.DecimalField(db_column='MaximumAmount', max_digits=18, decimal_places=2, blank=True, null=True)
     care_type = models.CharField(db_column='ServCareType', max_length=1)
     frequency = models.SmallIntegerField(db_column='ServFrequency', blank=True, null=True)
-    patient_category = models.SmallIntegerField(db_column='ServPatCat', default="15")
+    patient_category = models.SmallIntegerField(db_column='ServPatCat', default=DEFAULT_PATIENT_CATEGORY)
 
     # validity_from = fields.DateTimeField(db_column='ValidityFrom', blank=True, null=True)
     # validity_to = fields.DateTimeField(db_column='ValidityTo', blank=True, null=True)

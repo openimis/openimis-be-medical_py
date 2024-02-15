@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='service',
             name='packagetype',
-            field=models.CharField(db_column='ServPackageType', default='S', max_length=1),
+            field=models.CharField(choices=[('P', 'P'), ('S', 'S'), ('F', 'F')], db_column='ServPackageType', default='S', max_length=1),
         ),
 
         migrations.AlterField(
