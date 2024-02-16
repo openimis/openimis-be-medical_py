@@ -7,8 +7,9 @@ from core.test_helpers import create_test_interactive_user
 from django.conf import settings
 from graphene_django.utils.testing import GraphQLTestCase
 from graphql_jwt.shortcuts import get_token
-from medical.models import Item
+from medical.models import Item, ServiceItem, ServiceService
 from medical.test_helpers import create_test_item, create_test_service
+from medical.utils import item_create_hook, service_create_hook
 from rest_framework import status
 
 # from openIMIS import schema
@@ -194,7 +195,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
         content = json.loads(response.content)
         content_admin = json.loads(response_admin.content)
         self.assertEqual(len(content["data"]["medicalServices"]["edges"]), 1)
-        self.assertEqual(len(content_admin["data"]["medicalServices"]["edges"]), 2)
+        self.assertEqual(len(content_admin["data"]["medicalServices"]["edges"]), 1)
 
     def test_no_right_items_query(self):
         """
@@ -283,7 +284,9 @@ class MedicalGQLTestCase(GraphQLTestCase):
                 clientMutationId: "testapi2"
                 code: "TSTAPI"
                 name: "Auto test of create API"
-                type: "D"
+                type: "D",
+                maximumAmount: "225000.0",
+                quantity: "2.0"
                 careType: "B"
                 patientCategory: 11
                 price: "321"
@@ -328,7 +331,8 @@ class MedicalGQLTestCase(GraphQLTestCase):
                 name: "New name"
                 type: "D"
                 careType: "O"
-                patientCategory: 5
+                patientCategory: 5,
+                quantity: "1.0"
                 price: "555"
                 package: "box of 12"
               }) {
@@ -369,6 +373,8 @@ class MedicalGQLTestCase(GraphQLTestCase):
                 careType: "O"
                 patientCategory: 5
                 price: "555"
+                manualPrice: "0"
+                packagetype: "S"
               }) {
                 internalId
                 clientMutationId
@@ -444,3 +450,54 @@ class MedicalGQLTestCase(GraphQLTestCase):
         self.test_item_delete.refresh_from_db()
 
         self.assertIsNotNone(self.test_item_delete.validity_to)
+
+    def test_process_child_relation(self):
+        self.query(
+            '''
+            mutation {
+              updateService(input: {
+                clientMutationId: "testapi4"
+                uuid: "%s"
+                code: "SVCAX4"
+                name: "New name"
+                type: "A"
+                level: "H"
+                careType: "O"
+                patientCategory: 5
+                price: "555"
+                manualPrice: "0"
+                packagetype: "S"
+                services:  [
+                    {
+                        serviceId: %s,
+                        priceAsked: "600.00",
+                        qtyProvided: "1.00",
+                        status: 1
+                    }
+                ]
+                items:  [
+                    {
+                        itemId: %s,
+                        priceAsked: "1200.00",
+                        qtyProvided: "800.00",
+                        status: 1
+                    }
+                ]
+              }) {
+                internalId
+                clientMutationId
+              }
+            }
+            ''' % (self.test_service_update.uuid, self.test_service.id, self.test_item.id),
+            headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
+        )
+        self.test_service_update.refresh_from_db()
+        serv_item = ServiceItem.objects.filter(servicelinkedItem=self.test_service_update.id).first()
+        self.assertEquals(serv_item.price_asked, 1200)
+        self.assertEquals(serv_item.qty_provided, 800)
+        self.assertEquals(serv_item.item.id, self.test_item.id)
+
+        service_serv = ServiceService.objects.filter(servicelinkedService=self.test_service_update.id).first()
+        self.assertEquals(service_serv.price_asked, 600)
+        self.assertEquals(service_serv.qty_provided, 1)
+        self.assertEquals(service_serv.service.id, self.test_service.id)
