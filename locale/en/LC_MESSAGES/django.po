@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-30 12:32+0200\n"
+"POT-Creation-Date: 2024-02-16 09:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,52 +17,50 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: build/lib/medical/schema.py:72 build/lib/medical/schema.py:83
-#: build/lib/medical/schema.py:95 medical/schema.py:72 medical/schema.py:83
-#: medical/schema.py:95 medical/gql_mutations.py:147
-#: medical/gql_mutations.py:210 medical/gql_mutations.py:280
-#: medical/schema.py:97 medical/schema.py:110 medical/schema.py:131
-#: medical/schema.py:153 medical/schema.py:173
+#: medical/gql_mutations.py:162 medical/gql_mutations.py:225
+#: medical/gql_mutations.py:295 medical/schema.py:108 medical/schema.py:121
+#: medical/schema.py:143 medical/schema.py:165 medical/schema.py:186
+#: medical/schema.py:204 medical/schema.py:210
 msgid "unauthorized"
 msgstr "User not authorized for this operation"
 
-#: medical/gql_mutations.py:130
+#: medical/gql_mutations.py:152
 msgid "Code already exists."
-msgstr ""
+msgstr "Code already exists"
 
-#: medical/gql_mutations.py:145
+#: medical/gql_mutations.py:160
 msgid "mutation.authentication_required"
-msgstr ""
+msgstr "Authentication required to perform this action"
 
-#: medical/gql_mutations.py:155
+#: medical/gql_mutations.py:170
 msgid "medical.mutation.patient_category_missing"
-msgstr ""
+msgstr "Patient category is missing"
 
-#: medical/gql_mutations.py:178
+#: medical/gql_mutations.py:193
 msgid "service.mutation.failed_to_create_service"
-msgstr ""
+msgstr "Service could not be created"
 
-#: medical/gql_mutations.py:196
+#: medical/gql_mutations.py:211
 msgid "service.mutation.failed_to_update_service"
-msgstr ""
+msgstr "Service could not be updated"
 
-#: medical/gql_mutations.py:220
+#: medical/gql_mutations.py:235
 msgid "service.validation.id_does_not_exist"
-msgstr ""
+msgstr "Service ID does not exist"
 
-#: medical/gql_mutations.py:248
+#: medical/gql_mutations.py:263
 msgid "item.mutation.failed_to_create_item"
-msgstr ""
+msgstr "Item could not be created"
 
-#: medical/gql_mutations.py:266
+#: medical/gql_mutations.py:281
 msgid "item.mutation.failed_to_update_item"
-msgstr ""
+msgstr "Item could not be updated"
 
-#: medical/gql_mutations.py:290
+#: medical/gql_mutations.py:305
 msgid "item.validation.id_does_not_exist"
-msgstr ""
+msgstr "Item ID does not exist"
 
-#: medical/services.py:19
+#: medical/services.py:18
 #, python-brace-format
 msgid "medical.mutation.failed_to_delete_{item_or_service_element}"
-msgstr ""
+msgstr "{item_or_service_element} could not be deleted"

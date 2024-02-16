@@ -1,4 +1,4 @@
-from gettext import gettext as _
+from django.utils.translation import gettext as _
 
 def set_item_or_service_deleted(item_service, item_or_service_element):
     """
