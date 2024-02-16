@@ -149,7 +149,7 @@ def check_if_code_already_exists(
         item_service_model: django.db.models.base.ModelBase
 ):
     if item_service_model.objects.all().filter(code=data['code'], validity_to__isnull=True).exists():
-        raise CodeAlreadyExistsError(_("Code already exists."))
+        raise CodeAlreadyExistsError(_("mutation.code_already_exsists"))
 
 
 class CreateOrUpdateItemOrServiceMutation(OpenIMISMutation):
