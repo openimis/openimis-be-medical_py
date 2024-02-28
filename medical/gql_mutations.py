@@ -175,11 +175,11 @@ def update_or_create_item_or_service(data, user, item_service_model):
     service_service_sub = 0
     service_service_sub += process_services_relations(user, item_service, services)
    
-    print(" -- Item service Price")
-    print(item_service)
-    print(item_service.price)
+    logger.debug(" -- Item service Price")
+    logger.debug(item_service)
+    logger.debug(item_service.price)
     item_service.save()
-    print(item_service.price)
+    logger.debug(item_service.price)
     
     if client_mutation_id:
         if isinstance(item_service, Service):
