@@ -1,4 +1,5 @@
 import functools
+import logging
 from gettext import gettext as _
 from operator import or_
 
@@ -17,6 +18,8 @@ from medical.services import set_item_or_service_deleted
 from django.db import models
 from medical.utils import process_items_relations, process_services_relations
 
+
+logger = logging.getLogger(__name__)
 class ServiceCodeInputType(graphene.String):
     @staticmethod
     def coerce_string(value):
@@ -172,11 +175,11 @@ def update_or_create_item_or_service(data, user, item_service_model):
     service_service_sub = 0
     service_service_sub += process_services_relations(user, item_service, services)
    
-    print(" -- Item service Price")
-    print(item_service)
-    print(item_service.price)
+    logger.debug(" -- Item service Price")
+    logger.debug(item_service)
+    logger.debug(item_service.price)
     item_service.save()
-    print(item_service.price)
+    logger.debug(item_service.price)
     
     if client_mutation_id:
         if isinstance(item_service, Service):
@@ -213,8 +216,8 @@ class CreateOrUpdateItemOrServiceMutation(OpenIMISMutation):
         data['audit_user_id'] = user.id_for_audit
         from core.utils import TimeUtils
         data['validity_from'] = TimeUtils.now()
-        print("Create or Update Item or Service Mutation")
-        print(data)
+        logger.debug("Create or Update Item or Service Mutation")
+        logger.debug(data)
         update_or_create_item_or_service(data, user, cls.item_service_model)
         return None
 

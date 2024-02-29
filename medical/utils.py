@@ -1,21 +1,22 @@
-
+import logging
 from medical.models import ServiceItem, ServiceService, Item, Service
-
+logger = logging.getLogger(__name__)
 def process_child_relation(user, data_children, service_id, children, create_hook):
     claimed = 0
-    for data_elt in data_children:
-        elt_id = data_elt.pop('id') if 'id' in data_elt else None
-        if elt_id:
-            if create_hook == item_create_hook:
-                elt = ServiceItem.objects.get(id=elt_id)
+    if isinstance(data_children, list):
+        for data_elt in data_children:
+            elt_id = data_elt.pop('id') if 'id' in data_elt else None
+            if elt_id:
+                if create_hook == item_create_hook:
+                    elt = ServiceItem.objects.get(id=elt_id)
+                else:
+                    elt = ServiceService.objects.get(id=elt_id)
+                [setattr(elt, k, v) for k, v in data_elt.items()]
+                elt.save()
             else:
-                elt = ServiceService.objects.get(id=elt_id)
-            [setattr(elt, k, v) for k, v in data_elt.items()]
-            elt.save()
-        else:
-            print("Create Item or Service")
-            data_elt['audit_user_id'] = user.id_for_audit
-            create_hook(children, data_elt)
+                logger.debug("Create Item or Service")
+                data_elt['audit_user_id'] = user.id_for_audit
+                create_hook(children, data_elt)
     return claimed
 
 def item_create_hook(service_id, item):
