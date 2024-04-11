@@ -12,9 +12,12 @@ from medical.apps import MedicalConfig
 from medical.services import set_item_or_service_deleted
 
 
+DIAGNOSIS_CODE_LENGTH = 6
+
+
 class Diagnosis(core_models.VersionedModel):
     id = models.AutoField(db_column='ICDID', primary_key=True)
-    code = models.CharField(db_column='ICDCode', max_length=6)
+    code = models.CharField(db_column='ICDCode', max_length=DIAGNOSIS_CODE_LENGTH)
     name = models.CharField(db_column='ICDName', max_length=255)
 
     audit_user_id = models.IntegerField(db_column='AuditUserID')
