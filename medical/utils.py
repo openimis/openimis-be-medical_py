@@ -19,23 +19,25 @@ def process_child_relation(user, data_children, service_id, children, create_hoo
                 create_hook(children, data_elt)
     return claimed
 
-def item_create_hook(service_id, item):
-    item.item_id = Item.objects.get(id=item.item_id)
+
+def item_create_hook(service, item):
+    item_def = Item.objects.get(id=item['item_id'])
     ServiceItem.objects.create(
-        servicelinkedItem=service_id,
-        item = item.item_id,
-        price_asked = item.price_asked,
-        qty_provided = item.qty_provided)
+        parent=service,
+        item=item_def,
+        price_asked=item['price_asked'],
+        qty_provided=item['qty_provided'])
 
 
 def service_create_hook(service_id, service):
-    service.service = Service.objects.get(id=service.service_id)
+    service_def = Service.objects.get(id=service['service_id'])
     ServiceService.objects.create(
-        servicelinkedService=service_id,
-        service_id = service.service_id,
-        price_asked = service.price_asked,
-        qty_provided = service.qty_provided
+        parent=service_id,
+        service=service_def,
+        price_asked=service['price_asked'],
+        qty_provided=service['qty_provided']
     )
+
 
 def process_items_relations(user, Service, items):
     return process_child_relation(user, items, Service.id, Service, item_create_hook)

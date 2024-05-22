@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass
 
 from core.models import User
+from core.models.openimis_graphql_test_case import openIMISGraphQLTestCase
 from core.test_helpers import create_test_interactive_user
 from django.conf import settings
 from graphene_django.utils.testing import GraphQLTestCase
@@ -21,7 +22,7 @@ class DummyContext:
     user: User
 
 
-class MedicalGQLTestCase(GraphQLTestCase):
+class MedicalGQLTestCase(openIMISGraphQLTestCase):
     GRAPHQL_URL = f'/{settings.SITE_ROOT()}graphql'
     # This is required by some version of graphene but is never used. It should be set to the schema but the import
     # is shown as an error in the IDE, so leaving it as True.
@@ -195,7 +196,7 @@ class MedicalGQLTestCase(GraphQLTestCase):
         content = json.loads(response.content)
         content_admin = json.loads(response_admin.content)
         self.assertEqual(len(content["data"]["medicalServices"]["edges"]), 1)
-        self.assertEqual(len(content_admin["data"]["medicalServices"]["edges"]), 1)
+        self.assertEqual(len(content_admin["data"]["medicalServices"]["edges"]), 2)
 
     def test_no_right_items_query(self):
         """
@@ -491,13 +492,14 @@ class MedicalGQLTestCase(GraphQLTestCase):
             ''' % (self.test_service_update.uuid, self.test_service.id, self.test_item.id),
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
+        self.get_mutation_result('testapi4', self.admin_token)
         self.test_service_update.refresh_from_db()
-        serv_item = ServiceItem.objects.filter(servicelinkedItem=self.test_service_update.id).first()
+        serv_item = ServiceItem.objects.filter(parent=self.test_service_update.id).first()
         self.assertEquals(serv_item.price_asked, 1200)
         self.assertEquals(serv_item.qty_provided, 800)
         self.assertEquals(serv_item.item.id, self.test_item.id)
 
-        service_serv = ServiceService.objects.filter(servicelinkedService=self.test_service_update.id).first()
+        service_serv = ServiceService.objects.filter(parent=self.test_service_update.id).first()
         self.assertEquals(service_serv.price_asked, 600)
         self.assertEquals(service_serv.qty_provided, 1)
         self.assertEquals(service_serv.service.id, self.test_service.id)

@@ -132,38 +132,38 @@ def update_or_create_item_or_service(data, user, item_service_model):
 
     if item_service_uuid:
         item_service = item_service_model.objects.get(uuid=item_service_uuid)
-        if items:
+        if services:
             # Delete Service present in the Database and absent in the list sent by FE
             # Means that user click on delete button and old Service is not sent
-            serviceExisting = list()
-            serviceSent = list()
-            for ServiceList in ServiceService.objects.filter(servicelinkedService=item_service.id).all() :
-                serviceExisting.append(ServiceList.id)
+            service_existing = list()
+            service_sent = list()
+            for subservice in ServiceService.objects.filter(parent=item_service.id).all():
+                service_existing.append(subservice.id)
 
-            for ServiceList in services:
-                serviceSent.append(ServiceList.id)
+            for subservice in services:
+                service_sent.append(subservice['service_id'])
 
-            serviceToDelete = list(set(serviceExisting) - set(serviceSent))
-            for serviceToDeleteId in serviceToDelete:
+            service_to_delete = list(set(service_existing) - set(service_sent))
+            for service_to_delete_id in service_to_delete:
                 ServiceService.objects.filter(
-                    id=serviceToDeleteId,
+                    id=service_to_delete_id,
                 ).delete()
 
-        if services:
+        if items:
             # Delete Item present in the Database and absent in the list sent by FE
             # Means that user click on delete button and old Ites is not sent
-            itemExisting = list()
-            itemSent = list()
-            for ItemList in ServiceItem.objects.filter(servicelinkedItem=item_service.id).all() :
-                itemExisting.append(ItemList.id)
+            item_existing = list()
+            item_sent = list()
+            for subitem in ServiceItem.objects.filter(parent=item_service.id).all():
+                item_existing.append(subitem.id)
 
-            for ItemList in items:
-                itemSent.append(ItemList.id)
+            for subitem in items:
+                item_sent.append(subitem['item_id'])
 
-            itemToDelete = list(set(itemExisting) - set(itemSent))
-            for itemToDeleteId in itemToDelete:
+            item_to_delete = list(set(item_existing) - set(item_sent))
+            for item_to_delete_id in item_to_delete:
                 ServiceItem.objects.filter(
-                    id=itemToDeleteId,
+                    id=item_to_delete_id,
                 ).delete()
         reset_item_or_service_before_update(item_service)
         [setattr(item_service, key, data[key]) for key in data]
