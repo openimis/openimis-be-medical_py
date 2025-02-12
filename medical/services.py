@@ -2,14 +2,18 @@ from gettext import gettext as _
 
 def set_item_or_service_deleted(item_service, item_or_service_element):
     """
-    Marks an Item or Service as deleted, cascading onto the pricelists
+    Marks an Item or Service as deleted, cascading onto the pricelists & products
     :param item_service: the object to mark as deleted
-    :param item_or_service_element: either "item" or "service", used for translation keys
+    :param item_or_service_element: either "item" or "service"
     :return: an empty array is everything goes well, an array with errors if any
     """
     try:
         item_service.delete_history()
         [pld.delete_history() for pld in item_service.pricelist_details.filter(validity_to__isnull=True)]
+        if item_or_service_element == "item":
+            [product_item.delete_history() for product_item in item_service.items.filter(validity_to__isnull=True)]  # not clear but it's ProductItem
+        elif item_or_service_element == "service":
+            [product_service.delete_history() for product_service in item_service.services.filter(validity_to__isnull=True)]  # not clear, but it's ProductService
         return []
     except Exception as exc:
         return {
