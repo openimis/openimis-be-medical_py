@@ -3,7 +3,6 @@ import json
 from dataclasses import dataclass
 
 from core.models import User
-from core.models.openimis_graphql_test_case import openIMISGraphQLTestCase
 from core.test_helpers import create_test_interactive_user
 from django.conf import settings
 from graphene_django.utils.testing import GraphQLTestCase
@@ -15,11 +14,7 @@ from rest_framework import status
 
 # from openIMIS import schema
 
-
-@dataclass
-class DummyContext:
-    """ Just because we need a context to generate. """
-    user: User
+from core.models.openimis_graphql_test_case import openIMISGraphQLTestCase, BaseTestContext as DummyContext
 
 
 class MedicalGQLTestCase(openIMISGraphQLTestCase):
