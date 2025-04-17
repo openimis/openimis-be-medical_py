@@ -14,7 +14,7 @@ from rest_framework import status
 
 # from openIMIS import schema
 
-from core.models.openimis_graphql_test_case import openIMISGraphQLTestCase, BaseTestContext as DummyContext
+from core.models.openimis_graphql_test_case import openIMISGraphQLTestCase, BaseTestContext
 
 
 class MedicalGQLTestCase(openIMISGraphQLTestCase):
@@ -29,9 +29,11 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
         super().setUpClass()
         cls.AUTH_HEADER = settings.GRAPHQL_JWT.get('JWT_AUTH_HEADER_PREFIX', 'Bearer')
         cls.admin_user = create_test_interactive_user(username="testMedicalAdmin")
-        cls.admin_token = get_token(cls.admin_user, DummyContext(user=cls.admin_user))
+        cls.admin_context = BaseTestContext(user=cls.admin_user)
+        cls.admin_token = cls.admin_context.get_jwt()
         cls.noright_user = create_test_interactive_user(username="testMedicalNoRight", roles=[1])
-        cls.noright_token = get_token(cls.noright_user, DummyContext(user=cls.noright_user))
+        cls.noright_context = BaseTestContext(user=cls.noright_user)
+        cls.noright_token = cls.noright_context.get_jwt()
         cls.test_item_hist = create_test_item(item_type="M", custom_props={
             "name": "Test history API", "code": "TSTAP9"})
         cls.test_item_hist.save_history()
