@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("medical", "0009_alter_service_patient_category"),
+        ("medical", '0010_drop_views'),
     ]
 
     operations = [

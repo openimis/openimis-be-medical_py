@@ -12,6 +12,9 @@ DEFAULT_CFG = {
     "gql_mutation_medical_services_add_perms": ['121402'],
     "gql_mutation_medical_services_update_perms": ['121403'],
     "gql_mutation_medical_services_delete_perms": ['121404'],
+    "max_service_code_length":6,
+    "max_item_code_length":6,
+
 }
 
 
@@ -27,6 +30,9 @@ class MedicalConfig(AppConfig):
     gql_mutation_medical_services_add_perms = []
     gql_mutation_medical_services_update_perms = []
     gql_mutation_medical_services_delete_perms = []
+    max_service_code_length = None
+    max_item_code_length = None
+
 
     def __load_config(self, cfg):
         for field in cfg:

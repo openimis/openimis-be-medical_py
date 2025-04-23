@@ -20,10 +20,11 @@ from medical.utils import process_items_relations, process_services_relations
 
 
 logger = logging.getLogger(__name__)
+
 class ServiceCodeInputType(graphene.String):
     @staticmethod
     def coerce_string(value):
-        assert_string_length(value, 6)
+        assert_string_length(value, MedicalConfig.max_service_code_length)
         return value
 
     serialize = coerce_string
@@ -32,7 +33,7 @@ class ServiceCodeInputType(graphene.String):
     @staticmethod
     def parse_literal(ast):
         result = graphene.String.parse_literal(ast)
-        assert_string_length(result, 6)
+        assert_string_length(result, MedicalConfig.max_service_code_length)
         return result
 
 
