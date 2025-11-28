@@ -30,7 +30,7 @@ def get_item_of_type(item_type, valid=True):
     return Item.objects.filter(type=item_type).filter(validity_to__isnull=valid).first()
 
 
-def create_test_service(category, valid=True, custom_props=None):
+def create_test_service(category, valid=True, custom_props=None, create_history=False):
     if custom_props is None:
         custom_props = {}
     else:
@@ -61,6 +61,8 @@ def create_test_service(category, valid=True, custom_props=None):
                 **custom_props
             }
         )
+    if create_history:
+        obj.save_history()
     # reseting custom props to avoid having it in next calls
     return obj
 
