@@ -1,6 +1,5 @@
 import graphene
-from core import prefix_filterset, ExtendedConnection, filter_validity
-from graphene.utils.deduplicator import deflate
+from core import ExtendedConnection
 from graphene_django import DjangoObjectType
 from .models import Service, ServiceItem, ServiceService
 

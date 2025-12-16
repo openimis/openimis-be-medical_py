@@ -1,6 +1,5 @@
 import graphene
 from core import ExtendedConnection
-from core import filter_validity
 from core.schema import OrderedDjangoFilterConnectionField
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
@@ -9,7 +8,7 @@ from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 from medical.gql_mutations import CreateServiceMutation, UpdateServiceMutation, DeleteServiceMutation, \
     CreateItemMutation, UpdateItemMutation, DeleteItemMutation
-from .gql_queries import *
+from .gql_queries import ServiceGQLType
 
 from .apps import MedicalConfig
 from .models import Diagnosis, Item, Service

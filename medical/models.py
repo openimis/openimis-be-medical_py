@@ -1,9 +1,8 @@
-import string
 import uuid
 
-from core.models import VersionedModel, ObjectMutation
+from core.models import VersionedModel
 from django.db import models
-from django.utils import timezone as django_tz 
+from django.utils import timezone as django_tz
 from core import models as core_models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
@@ -13,6 +12,7 @@ import core
 from medical.apps import MedicalConfig
 from medical.services import set_item_or_service_deleted
 import datetime
+
 
 class Diagnosis(core_models.VersionedModel):
     id = models.AutoField(db_column='ICDID', primary_key=True)
@@ -64,8 +64,8 @@ class Item(VersionedModel, ItemOrService):
     type = models.CharField(db_column='ItemType', max_length=1)
     package = models.CharField(db_column='ItemPackage', max_length=255, blank=True, null=True)
     price = models.DecimalField(db_column='ItemPrice', max_digits=18, decimal_places=2)
-    quantity = models.DecimalField(db_column='Quantity', max_digits=18, decimal_places=2,blank = True, null=True)
-    maximum_amount = models.DecimalField(db_column='MaximumAmount', max_digits=18, decimal_places=2,blank=True, null=True)
+    quantity = models.DecimalField(db_column='Quantity', max_digits=18, decimal_places=2, blank=True, null=True)
+    maximum_amount = models.DecimalField(db_column='MaximumAmount', max_digits=18, decimal_places=2, blank=True, null=True)
     care_type = models.CharField(db_column='ItemCareType', max_length=1)
     frequency = models.SmallIntegerField(db_column='ItemFrequency', blank=True, null=True)
     patient_category = models.SmallIntegerField(db_column='ItemPatCat')
@@ -76,15 +76,17 @@ class Item(VersionedModel, ItemOrService):
         return self.code is not None and len(self.code) >= 1
 
     def __eq__(self, other):
-        equals = isinstance(other, Item) and \
-                 self.code == other.code and \
-                 self.name == other.name and \
-                 self.type == other.type and \
-                 self.price == other.price and \
-                 self.care_type == other.care_type and \
-                 self.patient_category == other.patient_category and \
-                 self.quantity == other.quantity and \
-                 self.frequency == other.frequency
+        equals = (
+            isinstance(other, Item) and
+            self.code == other.code and
+            self.name == other.name and
+            self.type == other.type and
+            self.price == other.price and
+            self.care_type == other.care_type and
+            self.patient_category == other.patient_category and
+            self.quantity == other.quantity and
+            self.frequency == other.frequency
+        )
 
         if equals:
             # optional string field -> making sure that None and empty string are treated as the same to avoid saving history
@@ -142,7 +144,7 @@ class Item(VersionedModel, ItemOrService):
 
 
 @receiver(pre_save, sender=Item)
-def save_history_on_update(sender, instance, **kwargs):
+def save_history_on_item_update(sender, instance, **kwargs):
     try:
         old_instance = sender.objects.get(pk=instance.pk)
     except sender.DoesNotExist:
@@ -155,10 +157,12 @@ def save_history_on_update(sender, instance, **kwargs):
         now = datetime.datetime.now()
         instance.validity_from = now
 
+
 class PackageTypes(models.TextChoices):
     P = "P", "P"
     S = "S", "S"
     F = "F", "F"
+
 
 class Service(VersionedModel, ItemOrService):
 
@@ -193,15 +197,17 @@ class Service(VersionedModel, ItemOrService):
         return self.code + " " + self.name
 
     def __eq__(self, other):
-        equals = isinstance(other, Service) and \
-                 self.code == other.code and \
-                 self.name == other.name and \
-                 self.type == other.type and \
-                 self.level == other.level and \
-                 self.price == other.price and \
-                 self.care_type == other.care_type and \
-                 self.patient_category == other.patient_category and \
-                 self.frequency == other.frequency
+        equals = (
+            isinstance(other, Service) and
+            self.code == other.code and
+            self.name == other.name and
+            self.type == other.type and
+            self.level == other.level and
+            self.price == other.price and
+            self.care_type == other.care_type and
+            self.patient_category == other.patient_category and
+            self.frequency == other.frequency
+        )
 
         if equals:
             # optional string field -> making sure that None and empty string are treated as the same to avoid saving history
@@ -273,7 +279,7 @@ class Service(VersionedModel, ItemOrService):
 
 
 @receiver(pre_save, sender=Service)
-def save_history_on_update(sender, instance, **kwargs):
+def save_history_on_service_update(sender, instance, **kwargs):
     try:
         old_instance = sender.objects.get(pk=instance.pk)
     except sender.DoesNotExist:
@@ -290,16 +296,29 @@ def save_history_on_update(sender, instance, **kwargs):
 class ServiceService(models.Model):
     """class representing relation between package and services """
     id = models.AutoField(primary_key=True, db_column='idSCP')
-    service = models.ForeignKey(Service, models.DO_NOTHING,
-                              db_column='ServiceId', related_name='servicesServices')
-    parent = models.ForeignKey( Service,
-                                          models.DO_NOTHING, db_column="ServiceLinked")
-    qty_provided = models.IntegerField(db_column="qty",
-                                      blank=True, null=True)
-    scpDate = models.DateTimeField(db_column="created_date", default=django_tz.now,
-                                   blank=True, null=True)
-    price_asked = models.DecimalField(db_column="price",
-                                   max_digits=18, decimal_places=2, blank=True, null=True)
+    service = models.ForeignKey(
+        Service,
+        models.DO_NOTHING,
+        db_column='ServiceId',
+        related_name='servicesServices')
+    parent = models.ForeignKey(
+        Service,
+        models.DO_NOTHING,
+        db_column="ServiceLinked")
+    qty_provided = models.IntegerField(
+        db_column="qty",
+        blank=True,
+        null=True)
+    scpDate = models.DateTimeField(
+        db_column="created_date",
+        default=django_tz.now,
+        blank=True, null=True)
+    price_asked = models.DecimalField(
+        db_column="price",
+        max_digits=18,
+        decimal_places=2,
+        blank=True,
+        null=True)
     status = models.BooleanField(default=True)
 
     class Meta:
@@ -310,21 +329,30 @@ class ServiceService(models.Model):
 class ServiceItem(models.Model):
     """class representing relation between package and product """
     id = models.AutoField(primary_key=True, db_column='idPCP')
-    item = models.ForeignKey(Item, models.DO_NOTHING, db_column='ItemID', related_name="itemsServices")                           
-    parent = models.ForeignKey( Service,
-                                          models.DO_NOTHING, db_column="ServiceID",related_name='servicesLinked')
-    qty_provided = models.IntegerField(db_column="qty",
-                                      blank=True, null=True)
-    pcpDate = models.DateTimeField(db_column="created_date", default=django_tz.now,
-                                   blank=True, null=True)
-    price_asked = models.DecimalField(db_column="price",
-                                   max_digits=18, decimal_places=2, blank=True, null=True)
+    item = models.ForeignKey(Item, models.DO_NOTHING, db_column='ItemID', related_name="itemsServices")
+    parent = models.ForeignKey(
+        Service,
+        models.DO_NOTHING,
+        db_column="ServiceID",
+        related_name='servicesLinked')
+    qty_provided = models.IntegerField(
+        db_column="qty",
+        blank=True, null=True)
+    pcpDate = models.DateTimeField(
+        db_column="created_date",
+        default=django_tz.now,
+        blank=True, null=True)
+    price_asked = models.DecimalField(
+        db_column="price",
+        max_digits=18,
+        decimal_places=2,
+        blank=True,
+        null=True)
     status = models.BooleanField(default=True)
-    
+
     class Meta:
         managed = True
         db_table = 'tblProductContainedPackage'
-
 
 
 class ItemMutation(core_models.UUIDModel, core_models.ObjectMutation):
