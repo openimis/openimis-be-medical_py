@@ -1,6 +1,7 @@
 from medical.models import Service, Item, Diagnosis
 import random
 
+
 def create_test_diagnosis(custom_props=None):
     if custom_props is None:
         custom_props = {}        
