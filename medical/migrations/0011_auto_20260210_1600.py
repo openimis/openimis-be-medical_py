@@ -14,11 +14,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='item',
             name='program',
-            field=models.ForeignKey(db_column='program', null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='item_program', to='program.program'),
+            field=models.ForeignKey(db_column='program', blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='item_program', to='program.program'),
         ),
         migrations.AddField(
             model_name='service',
             name='program',
-            field=models.ForeignKey(db_column='program', null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='service_program', to='program.program'),
+            field=models.ForeignKey(db_column='program', blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='service_program', to='program.program'),
         ),
     ]

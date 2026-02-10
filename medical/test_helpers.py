@@ -1,6 +1,5 @@
 from medical.models import Service, Item, Diagnosis
 import random
-from program.test_helpers import create_test_program
 
 def create_test_diagnosis(custom_props=None):
     if custom_props is None:
@@ -58,7 +57,6 @@ def create_test_service(category, valid=True, custom_props=None):
                 "validity_from": "2019-06-01",
                 "validity_to": None if valid else "2019-06-01",
                 "audit_user_id": -1,
-                "program": create_test_program(),
                 **custom_props
             }
         )
@@ -92,7 +90,6 @@ def create_test_item(item_type, valid=True, custom_props=None):
                 "validity_from": "2019-06-01",
                 "validity_to": None if valid else "2019-06-01",
                 "audit_user_id": -1,
-                "program": create_test_program(),
                 **custom_props
             }
         )

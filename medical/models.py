@@ -76,7 +76,8 @@ class Item(VersionedModel, ItemOrService):
         models.DO_NOTHING,
         db_column='program',
         related_name="item_program",
-        null=True
+        null=True,
+        blank=True
     )
     # row_id = models.BinaryField(db_column='RowID', blank=True, null=True)
 
@@ -198,7 +199,8 @@ class Service(VersionedModel, ItemOrService):
         models.DO_NOTHING,
         db_column='program',
         related_name="service_program",
-        null=True
+        null=True,
+        blank=True
     )
 
     def __bool__(self):
