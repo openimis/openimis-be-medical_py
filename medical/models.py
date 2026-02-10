@@ -13,6 +13,7 @@ import core
 from medical.apps import MedicalConfig
 from medical.services import set_item_or_service_deleted
 import datetime
+from program import models as program_models
 
 class Diagnosis(core_models.VersionedModel):
     id = models.AutoField(db_column='ICDID', primary_key=True)
@@ -70,6 +71,13 @@ class Item(VersionedModel, ItemOrService):
     frequency = models.SmallIntegerField(db_column='ItemFrequency', blank=True, null=True)
     patient_category = models.SmallIntegerField(db_column='ItemPatCat')
     audit_user_id = models.IntegerField(db_column='AuditUserID')
+    program = models.ForeignKey(
+        program_models.Program,
+        models.DO_NOTHING,
+        db_column='program',
+        related_name="item_program",
+        null=True
+    )
     # row_id = models.BinaryField(db_column='RowID', blank=True, null=True)
 
     def __bool__(self):
@@ -185,6 +193,13 @@ class Service(VersionedModel, ItemOrService):
     # validity_to = fields.DateTimeField(db_column='ValidityTo', blank=True, null=True)
     audit_user_id = models.IntegerField(db_column='AuditUserID', blank=True, null=True)
     # row_id = models.BinaryField(db_column='RowID', blank=True, null=True)
+    program = models.ForeignKey(
+        program_models.Program,
+        models.DO_NOTHING,
+        db_column='program',
+        related_name="service_program",
+        null=True
+    )
 
     def __bool__(self):
         return self.code is not None and len(self.code) >= 1
