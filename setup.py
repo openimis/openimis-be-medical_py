@@ -22,7 +22,7 @@ setup(
         'django',
         'django-db-signals',
         'djangorestframework',
-    ],   
+    ],
     classifiers=[
         'Environment :: Web Environment',
         'Framework :: Django',
