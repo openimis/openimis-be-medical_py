@@ -64,7 +64,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         self.assertResponseNoErrors(response)
@@ -87,7 +87,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         # This validates the status code and if you get errors
@@ -116,7 +116,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         self.assertResponseNoErrors(response)
@@ -150,7 +150,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         # This validates the status code and if you get errors
@@ -226,7 +226,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         self.assertResponseNoErrors(response)
@@ -264,7 +264,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         self.assertResponseNoErrors(response)
@@ -297,7 +297,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         self.assertResponseNoErrors(response)
@@ -341,7 +341,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         self.assertResponseNoErrors(response)
@@ -381,7 +381,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         self.assertResponseNoErrors(response)
@@ -412,7 +412,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         self.assertResponseNoErrors(response)
@@ -438,7 +438,7 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
             headers={"HTTP_AUTHORIZATION": f"{self.AUTH_HEADER} {self.admin_token}"},
         )
 
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         content = json.loads(response.content)
 
         self.assertResponseNoErrors(response)
@@ -491,11 +491,11 @@ class MedicalGQLTestCase(openIMISGraphQLTestCase):
         self.get_mutation_result('testapi4', self.admin_token)
         self.test_service_update.refresh_from_db()
         serv_item = ServiceItem.objects.filter(parent=self.test_service_update.id).first()
-        self.assertEquals(serv_item.price_asked, 1200)
-        self.assertEquals(serv_item.qty_provided, 800)
-        self.assertEquals(serv_item.item.id, self.test_item.id)
+        self.assertEqual(serv_item.price_asked, 1200)
+        self.assertEqual(serv_item.qty_provided, 800)
+        self.assertEqual(serv_item.item.id, self.test_item.id)
 
         service_serv = ServiceService.objects.filter(parent=self.test_service_update.id).first()
-        self.assertEquals(service_serv.price_asked, 600)
-        self.assertEquals(service_serv.qty_provided, 1)
-        self.assertEquals(service_serv.service.id, self.test_service.id)
+        self.assertEqual(service_serv.price_asked, 600)
+        self.assertEqual(service_serv.qty_provided, 1)
+        self.assertEqual(service_serv.service.id, self.test_service.id)
