@@ -15,13 +15,14 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from medical.apps import MedicalConfig
 from medical.models import Service, ServiceMutation, Item, ItemMutation, ServiceService, ServiceItem
 from medical.services import set_item_or_service_deleted
-from django.db import models
 from medical.utils import process_items_relations, process_services_relations
 from program import models as program_models
 from core.apps import CoreConfig
 
 
 logger = logging.getLogger(__name__)
+
+
 class ServiceCodeInputType(graphene.String):
     @staticmethod
     def coerce_string(value):
@@ -50,7 +51,6 @@ PatientCategoriesEnum = graphene.Enum("PatientCategories", [
 ])
 
 
-
 class ServiceItemInputType(InputObjectType):
     id = graphene.Int(required=False)
     item_id = graphene.Int(required=True)
@@ -60,6 +60,7 @@ class ServiceItemInputType(InputObjectType):
     price_asked = graphene.Decimal(
         max_digits=18, decimal_places=2, required=False)
 
+
 class ServiceServiceInputType(InputObjectType):
     id = graphene.Int(required=False)
     service_id = graphene.Int(required=True)
@@ -68,7 +69,8 @@ class ServiceServiceInputType(InputObjectType):
         max_digits=18, decimal_places=2, required=False)
     price_asked = graphene.Decimal(
         max_digits=18, decimal_places=2, required=False)
-    
+
+
 class ItemOrServiceInputType(OpenIMISMutation.Input):
     id = graphene.Int(required=False, read_only=True)
     uuid = graphene.String(required=False)
@@ -106,11 +108,11 @@ def reset_item_or_service_before_update(item_service):
         "patient_category",
         "category",
         "level",    # service only
-        "category", # service only
+        "category",  # service only
         "package",  # item only
-        "quantity", # item only
-        "packagetype", #service only
-        "manualPrice", #service only
+        "quantity",  # item only
+        "packagetype",  # service only
+        "manualPrice",  # service only
     ]
     for field in fields:
         if hasattr(item_service, field):
@@ -176,18 +178,18 @@ def update_or_create_item_or_service(data, user, item_service_model):
         [setattr(item_service, key, data[key]) for key in data]
     else:
         item_service = item_service_model.objects.create(**data)
-    
+
     item_service_sub = 0
     item_service_sub += process_items_relations(user, item_service, items)
     service_service_sub = 0
     service_service_sub += process_services_relations(user, item_service, services)
-   
+
     logger.debug(" -- Item service Price")
     logger.debug(item_service)
     logger.debug(item_service.price)
     item_service.save()
     logger.debug(item_service.price)
-    
+
     if client_mutation_id:
         if isinstance(item_service, Service):
             ServiceMutation.object_mutated(user, client_mutation_id=client_mutation_id, service=item_service)
@@ -298,6 +300,7 @@ class ItemInputType(ItemOrServiceInputType):
     package = graphene.String()
     quantity = graphene.Decimal()
     program = graphene.Int(required=False)
+
 
 class CreateItemMutation(CreateOrUpdateItemOrServiceMutation):
     _mutation_module = "medical"
