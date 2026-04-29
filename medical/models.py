@@ -46,6 +46,7 @@ class Diagnosis(core_models.VersionedModel):
     class Meta:
         managed = True
         db_table = 'tblICDCodes'
+        app_label = 'medical'
 
 
 class ItemOrService:
