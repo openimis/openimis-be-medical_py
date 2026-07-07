@@ -46,6 +46,7 @@ class Diagnosis(core_models.VersionedModel):
     class Meta:
         managed = True
         db_table = 'tblICDCodes'
+        app_label = 'medical'
 
 
 class ItemOrService:
@@ -137,6 +138,7 @@ class Item(VersionedModel, ItemOrService):
     class Meta:
         managed = True
         db_table = 'tblItems'
+        app_label = 'medical'
 
     TYPE_DRUG = "D"
     TYPE_MEDICAL_CONSUMABLE = "M"
@@ -256,6 +258,7 @@ class Service(VersionedModel, ItemOrService):
     class Meta:
         managed = True
         db_table = 'tblServices'
+        app_label = 'medical'
 
     TYPE_PREVENTATIVE = "P"
     TYPE_CURATIVE = "C"
@@ -324,6 +327,7 @@ class ServiceService(models.Model):
     class Meta:
         managed = True
         db_table = 'tblServiceContainedPackage'
+        app_label = 'medical'
 
 
 class ServiceItem(models.Model):
