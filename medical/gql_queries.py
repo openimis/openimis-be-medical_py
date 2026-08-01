@@ -2,6 +2,7 @@ import graphene
 from core import ExtendedConnection
 from graphene_django import DjangoObjectType
 from .models import Service, ServiceItem, ServiceService
+from program.schema import ProgramGQLType
 
 
 class ServiceGQLType(DjangoObjectType):
@@ -19,6 +20,7 @@ class ServiceGQLType(DjangoObjectType):
             'packagetype': ['exact', 'in'],
             'care_type': ['exact'],
             'category': ['exact'],
+            **prefix_filterset("program__", ProgramGQLType._meta.filter_fields)
         }
         connection_class = ExtendedConnection
 
