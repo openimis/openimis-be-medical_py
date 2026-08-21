@@ -1,5 +1,7 @@
-from medical.models import Service, Item, Diagnosis
 import random
+
+from medical.models import Service, Item, Diagnosis
+from medical.test_factories import DiagnosisFactory, ServiceFactory, ItemFactory
 
 
 def create_test_diagnosis(custom_props=None):
@@ -18,7 +20,7 @@ def create_test_diagnosis(custom_props=None):
     custom_props['code'] = custom_props.pop('code', ('D-' + ref))
     custom_props['name'] = custom_props.pop('name', ('Diagnostic' + ref))
     if not diag:
-        diag = Diagnosis.objects.create(**custom_props)
+        diag = DiagnosisFactory(**custom_props)
     return diag
 
 
@@ -31,10 +33,7 @@ def get_item_of_type(item_type, valid=True):
 
 
 def create_test_service(category, valid=True, custom_props=None, create_history=False):
-    if custom_props is None:
-        custom_props = {}
-    else:
-        custom_props = {k: v for k, v in custom_props.items() if hasattr(Service, k)}
+    custom_props = {k: v for k, v in (custom_props or {}).items() if hasattr(Service, k)}
     ref = str(random.randint(1, 999))
     code = custom_props.pop('code', ('TS-' + ref))
     name = custom_props.pop('name', ('test S service ' + ref))
@@ -44,57 +43,35 @@ def create_test_service(category, valid=True, custom_props=None, create_history=
             Service.objects.filter(id=obj.id).update(**custom_props)
             obj.refresh_from_db()
     else:
-        obj = Service.objects.create(
+        obj = ServiceFactory(
             **{
-                "maximum_amount": 5000,
                 "code": code,
                 "category": category,
                 "name": name,
-                "type": Service.TYPE_CURATIVE,
-                "level": 1,
-                "price": 100,
-                "patient_category": 15,
-                "care_type": Service.CARE_TYPE_BOTH,
-                "validity_from": "2019-06-01",
                 "validity_to": None if valid else "2019-06-01",
-                "audit_user_id": -1,
                 **custom_props
             }
         )
     if create_history:
         obj.save_history()
-    # reseting custom props to avoid having it in next calls
     return obj
 
 
 def create_test_item(item_type, valid=True, custom_props=None):
-    if custom_props is None:
-        custom_props = {}
-    else:
-        custom_props = {k: v for k, v in custom_props.items() if hasattr(Item, k)}
+    custom_props = {k: v for k, v in (custom_props or {}).items() if hasattr(Item, k)}
     code = custom_props.pop('code', ('TI-' + str(random.randint(1, 999))))
-
     obj = Item.objects.filter(code=code, validity_to__isnull=valid).first()
     if obj is not None:
         if custom_props:
             Item.objects.filter(id=obj.id).update(**custom_props)
             obj.refresh_from_db()
     else:
-        obj = Item.objects.create(
+        obj = ItemFactory(
             **{
-                "quantity": 1,
-                "maximum_amount": 225000,
                 "code": code,
                 "type": item_type,
-                "name": "Test item",
-                "price": 100,
-                "patient_category": 15,
-                "care_type": Item.CARE_TYPE_BOTH,
-                "validity_from": "2019-06-01",
                 "validity_to": None if valid else "2019-06-01",
-                "audit_user_id": -1,
                 **custom_props
             }
         )
-
     return obj
