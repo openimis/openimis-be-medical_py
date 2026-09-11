@@ -5,7 +5,6 @@ from .models import Service, ServiceItem, ServiceService
 
 
 class ServiceGQLType(DjangoObjectType):
-    attachments_count = graphene.Int()
     client_mutation_id = graphene.String()
 
     class Meta:
