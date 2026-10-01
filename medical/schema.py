@@ -88,7 +88,28 @@ class Query(graphene.ObjectType):
         description="Checks that the specified service code is unique."
     )
 
+    # `diagnoses` had no resolver at all: no right, no `filter_validity`, and since
+    # `DiagnosisGQLType` does not carry `ScopedQuerysetMixin`, the model's
+    # `Diagnosis.get_queryset` (`models.py:35-43`) was never called either - so even
+    # the anonymous refusal it contains was dead code on this path, and the
+    # historised rows were exposed. Its twin `diagnoses_str`, three lines below, did
+    # the work: the two are now aligned.
+    #
+    # The anonymous refusal is explicit because `gql_query_diagnosis_perms` holds
+    # `[]` as long as the product decision is not taken (see `apps.py:11-15`), and
+    # `has_perms([])` returns `True` - including for `AnonymousUser`. The item and
+    # service reads of the same module already refuse anonymous callers this way
+    # (OMT-281 exemption).
+    def resolve_diagnoses(self, info, **kwargs):
+        if info.context.user.is_anonymous:
+            raise PermissionDenied(_("unauthorized"))
+        if not info.context.user.has_perms(MedicalConfig.gql_query_diagnosis_perms):
+            raise PermissionDenied(_("unauthorized"))
+        return Diagnosis.objects.filter(*Diagnosis.filter_validity())
+
     def resolve_diagnoses_str(self, info, **kwargs):
+        if info.context.user.is_anonymous:
+            raise PermissionDenied(_("unauthorized"))
         if not info.context.user.has_perms(MedicalConfig.gql_query_diagnosis_perms):
             raise PermissionDenied(_("unauthorized"))
         search_str = kwargs.get('str')
