@@ -67,9 +67,20 @@ def create_test_service(category, valid=True, custom_props=None, create_history=
     name = custom_props.pop('name', ('test S service ' + ref))
     obj = Service.objects.filter(code=code, validity_to__isnull=valid).first()
     if obj is not None:
+        # The code is "TS-" plus a number out of 999, so it collides readily -
+        # with a seeded service, or with one an earlier test made. Returning
+        # that row as-is handed the caller a service of the *wrong category*,
+        # silently: callers choose the category deliberately, and
+        # get_claim_category reads it. Honour what was asked for (OP-3198).
+        if category is not None and obj.category != category:
+            custom_props = {**custom_props, "category": category}
         if custom_props:
             Service.objects.filter(id=obj.id).update(**custom_props)
             obj.refresh_from_db()
+            # A queryset update does not go through save(), so the cached
+            # manager keeps serving the row as it was. Without this, the very
+            # next `Service.objects.get(...)` hands back the stale version.
+            obj.update_cache()
     else:
         obj = Service.objects.create(
             **{
@@ -103,9 +114,17 @@ def create_test_item(item_type, valid=True, custom_props=None):
 
     obj = Item.objects.filter(code=code, validity_to__isnull=valid).first()
     if obj is not None:
+        # Same collision as create_test_service above: "TI-" plus a number out
+        # of 999 reuses whatever row already has that code, whatever its type.
+        if item_type is not None and obj.type != item_type:
+            custom_props = {**custom_props, "type": item_type}
         if custom_props:
             Item.objects.filter(id=obj.id).update(**custom_props)
             obj.refresh_from_db()
+            # A queryset update does not go through save(), so the cached
+            # manager keeps serving the row as it was. Without this, the very
+            # next `Item.objects.get(...)` hands back the stale version.
+            obj.update_cache()
     else:
         obj = Item.objects.create(
             **{
