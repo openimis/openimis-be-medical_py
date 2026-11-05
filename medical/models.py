@@ -33,13 +33,13 @@ class Diagnosis(core_models.VersionedModel):
         return queryset
 
     @classmethod
-    def get_queryset(cls, queryset, user):
-        queryset = Diagnosis.filter_queryset(queryset)
+    def get_queryset(cls, queryset, user, *, validity=None, audits=None):
+        queryset = cls.apply_row_filters(queryset, validity, audits, default=cls.filter_queryset)
         # GraphQL calls with an info object while Rest calls with the user itself
         if isinstance(user, ResolveInfo):
             user = user.context.user
         if settings.ROW_SECURITY and user.is_anonymous:
-            return queryset.filter(id=-1)
+            return cls.no_rows(queryset)
 
         return queryset
 
@@ -58,6 +58,9 @@ class ItemOrService:
 
 
 class Item(VersionedModel, ItemOrService):
+    # Versions carry a business meaning: a validity date picks the one valid then.
+    business_versioned = True
+
     id = models.AutoField(db_column='ItemID', primary_key=True)
     uuid = models.CharField(db_column='ItemUUID', max_length=36, default=uuid.uuid4, unique=True)
     code = models.CharField(db_column='ItemCode', max_length=6)
@@ -113,17 +116,20 @@ class Item(VersionedModel, ItemOrService):
         return queryset
 
     @classmethod
-    def get_queryset(cls, queryset, user, show_history=False):
+    def get_queryset(cls, queryset, user, show_history=False, *, validity=None, audits=None):
         # GraphQL calls with an info object while Rest calls with the user itself
         if isinstance(user, ResolveInfo):
             user = user.context.user
-        # OMT-281 only allow history if the user has full permission
-        if show_history and user.has_perms(MedicalConfig.gql_query_medical_items_perms):
+        # OMT-281: the audit trail, like the history, needs the full right
+        history_allowed = user.has_perms(MedicalConfig.gql_query_medical_items_perms)
+        if show_history and history_allowed:
             queryset = Item.objects.all()
         else:
-            queryset = Item.filter_queryset(queryset)
+            queryset = cls.apply_row_filters(
+                queryset, validity, audits if history_allowed else None, default=cls.filter_queryset
+            )
         if settings.ROW_SECURITY and user.is_anonymous:
-            return queryset.filter(id=-1)
+            return cls.no_rows(queryset)
 
         return queryset
 
@@ -167,6 +173,9 @@ class PackageTypes(models.TextChoices):
 
 
 class Service(VersionedModel, ItemOrService):
+    # Versions carry a business meaning: a validity date picks the one valid then.
+    business_versioned = True
+
 
     DEFAULT_PATIENT_CATEGORY = 15
 
@@ -240,18 +249,21 @@ class Service(VersionedModel, ItemOrService):
         return queryset
 
     @classmethod
-    def get_queryset(cls, queryset, user, show_history=False):
+    def get_queryset(cls, queryset, user, show_history=False, *, validity=None, audits=None):
         # GraphQL calls with an info object while Rest calls with the user itself
         if isinstance(user, ResolveInfo):
             user = user.context.user
 
-        # OMT-281 only allow history if the user has full permission
-        if show_history and user.has_perms(MedicalConfig.gql_query_medical_services_perms):
+        # OMT-281: the audit trail, like the history, needs the full right
+        history_allowed = user.has_perms(MedicalConfig.gql_query_medical_services_perms)
+        if show_history and history_allowed:
             queryset = Service.objects.all()
         else:
-            queryset = Service.filter_queryset(queryset)
+            queryset = cls.apply_row_filters(
+                queryset, validity, audits if history_allowed else None, default=cls.filter_queryset
+            )
         if settings.ROW_SECURITY and user.is_anonymous:
-            return queryset.filter(id=-1)
+            return cls.no_rows(queryset)
 
         return queryset
 
