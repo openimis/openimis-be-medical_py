@@ -81,15 +81,15 @@ class Item(VersionedModel, ItemOrService):
 
     def __eq__(self, other):
         equals = (
-            isinstance(other, Item) and
-            self.code == other.code and
-            self.name == other.name and
-            self.type == other.type and
-            self.price == other.price and
-            self.care_type == other.care_type and
-            self.patient_category == other.patient_category and
-            self.quantity == other.quantity and
-            self.frequency == other.frequency
+            isinstance(other, Item)
+            and self.code == other.code
+            and self.name == other.name
+            and self.type == other.type
+            and self.price == other.price
+            and self.care_type == other.care_type
+            and self.patient_category == other.patient_category
+            and self.quantity == other.quantity
+            and self.frequency == other.frequency
         )
 
         if equals:
@@ -176,7 +176,6 @@ class Service(VersionedModel, ItemOrService):
     # Versions carry a business meaning: a validity date picks the one valid then.
     business_versioned = True
 
-
     DEFAULT_PATIENT_CATEGORY = 15
 
     id = models.AutoField(db_column='ServiceID', primary_key=True)
@@ -209,15 +208,15 @@ class Service(VersionedModel, ItemOrService):
 
     def __eq__(self, other):
         equals = (
-            isinstance(other, Service) and
-            self.code == other.code and
-            self.name == other.name and
-            self.type == other.type and
-            self.level == other.level and
-            self.price == other.price and
-            self.care_type == other.care_type and
-            self.patient_category == other.patient_category and
-            self.frequency == other.frequency
+            isinstance(other, Service)
+            and self.code == other.code
+            and self.name == other.name
+            and self.type == other.type
+            and self.level == other.level
+            and self.price == other.price
+            and self.care_type == other.care_type
+            and self.patient_category == other.patient_category
+            and self.frequency == other.frequency
         )
 
         if equals:
