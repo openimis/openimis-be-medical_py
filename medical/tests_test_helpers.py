@@ -10,7 +10,7 @@ it.
 """
 
 from django.test import TestCase
-from medical.models import Item, Service
+from medical.models import Service
 from medical.test_helpers import create_test_item, create_test_service
 
 
