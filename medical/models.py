@@ -6,7 +6,7 @@ from django.utils import timezone as django_tz
 from core import models as core_models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from graphql import ResolveInfo
+from graphql import GraphQLResolveInfo
 from django.conf import settings
 import core
 from medical.apps import MedicalConfig
@@ -36,7 +36,7 @@ class Diagnosis(core_models.VersionedModel):
     def get_queryset(cls, queryset, user):
         queryset = Diagnosis.filter_queryset(queryset)
         # GraphQL calls with an info object while Rest calls with the user itself
-        if isinstance(user, ResolveInfo):
+        if isinstance(user, GraphQLResolveInfo):
             user = user.context.user
         if settings.ROW_SECURITY and user.is_anonymous:
             return queryset.filter(id=-1)
@@ -115,7 +115,7 @@ class Item(VersionedModel, ItemOrService):
     @classmethod
     def get_queryset(cls, queryset, user, show_history=False):
         # GraphQL calls with an info object while Rest calls with the user itself
-        if isinstance(user, ResolveInfo):
+        if isinstance(user, GraphQLResolveInfo):
             user = user.context.user
         # OMT-281 only allow history if the user has full permission
         if show_history and user.has_perms(MedicalConfig.gql_query_medical_items_perms):
@@ -242,7 +242,7 @@ class Service(VersionedModel, ItemOrService):
     @classmethod
     def get_queryset(cls, queryset, user, show_history=False):
         # GraphQL calls with an info object while Rest calls with the user itself
-        if isinstance(user, ResolveInfo):
+        if isinstance(user, GraphQLResolveInfo):
             user = user.context.user
 
         # OMT-281 only allow history if the user has full permission
